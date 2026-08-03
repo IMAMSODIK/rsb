@@ -14,14 +14,14 @@
 		<meta property="og:description" content="Marketplace for Bootstrap Admin Dashboards">
 		<meta property="og:type" content="Website">
 		<meta property="og:site_name" content="Bootstrap Gallery">
-		<link rel="shortcut icon" href="{{asset('dashbord_assets/images/favicon.svg')}}" />
+		<link rel="shortcut icon" href="{{asset('dashboard_assets/images/favicon.svg')}}" />
 
-		<link rel="stylesheet" href="{{asset('dashbord_assets/fonts/bootstrap/bootstrap-icons.css')}}" />
-		<link rel="stylesheet" href="{{asset('dashbord_assets/css/main.min.css')}}" />
+		<link rel="stylesheet" href="{{asset('dashboard_assets/fonts/bootstrap/bootstrap-icons.css')}}" />
+		<link rel="stylesheet" href="{{asset('dashboard_assets/css/main.min.css')}}" />
 
-		<link rel="stylesheet" href="{{asset('dashbord_assets/vendor/overlay-scroll/OverlayScrollbars.min.css')}}" />
+		<link rel="stylesheet" href="{{asset('dashboard_assets/vendor/overlay-scroll/OverlayScrollbars.min.css')}}" />
 
-		<link rel="stylesheet" href="{{asset('dashbord_assets/vendor/toastify/toastify.css')}}" />
+		<link rel="stylesheet" href="{{asset('dashboard_assets/vendor/toastify/toastify.css')}}" />
 
 	</head>
 
@@ -189,7 +189,7 @@
 								<h5 class="fw-semibold px-3 py-2 text-primary">Messages</h5>
 								<div class="dropdown-item">
 									<div class="d-flex py-2 border-bottom">
-										<img src="assets/images/user3.png" class="img-3x me-3 rounded-5" alt="Admin Theme" />
+										<img src="{{asset('dashboard_assets/images/user3.png')}}" class="img-3x me-3 rounded-5" alt="Admin Theme" />
 										<div class="m-0">
 											<h6 class="mb-1 fw-semibold">Angelia Payne</h6>
 											<p class="mb-1">
@@ -201,7 +201,7 @@
 								</div>
 								<div class="dropdown-item">
 									<div class="d-flex py-2 border-bottom">
-										<img src="assets/images/user1.png" class="img-3x me-3 rounded-5" alt="Admin Theme" />
+										<img src="{{asset('dashboard_assets/images/user1.png')}}" class="img-3x me-3 rounded-5" alt="Admin Theme" />
 										<div class="m-0">
 											<h6 class="mb-1 fw-semibold">Clyde Fowler</h6>
 											<p class="mb-1">
@@ -213,7 +213,7 @@
 								</div>
 								<div class="dropdown-item">
 									<div class="d-flex py-2">
-										<img src="assets/images/user4.png" class="img-3x me-3 rounded-5" alt="Admin Theme" />
+										<img src="{{asset('dashboard_assets/images/user4.png')}}" class="img-3x me-3 rounded-5" alt="Admin Theme" />
 										<div class="m-0">
 											<h6 class="mb-1 fw-semibold">Sophie Michiels</h6>
 											<p class="mb-1">
@@ -232,7 +232,7 @@
 					<div class="dropdown ms-2">
 						<a id="userSettings" class="dropdown-toggle d-flex py-2 align-items-center text-decoration-none" href="#!"
 							role="button" data-bs-toggle="dropdown" aria-expanded="false">
-							<img src="assets/images/user.png" class="rounded-2 img-3x" alt="Bootstrap Gallery" />
+							<img src="{{asset('dashboard_assets/images/user.png')}}" class="rounded-2 img-3x" alt="Bootstrap Gallery" />
 							<span class="ms-2 text-truncate d-lg-block d-none">Anne Santiago</span>
 						</a>
 						<div class="dropdown-menu dropdown-menu-end shadow-lg">
