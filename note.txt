@@ -1,0 +1,80 @@
+catatan: 
+    - 1 operator pada setiap unit kerja
+    - login pakai filter tahun
+
+
+
+MASTER
+------
+    - Jenis kinerja layanan (dari KEMENKEU)
+    - kateori kenerja layanan (dari KEMENKEU)
+    - IKU(Indikator kinerja Utama) kinerja layanan (dari KEMENKEU)
+    - Tujuan RSB (Rencana Strategis Bisnis)
+    - Sasaran Program
+    - Sasaran Strategis
+    - IKU RSB uin
+    - Periode RSB
+    - Unit kerja
+    - Hak akses (admin dan operator)
+
+
+TARGET KINERJA LAYANAN
+REALISASI KINERJA LAYANAN
+TARGET KINERJA IKU RSB
+REALISASI KINERJA IKU RSB
+
+LAPORAN
+-------
+    - Capaian kinerja RSB (bisa persemester / tahunan)
+    - Capaian kinerja IKU (bisa persemester / tahunan)
+
+
+
+
+
+table migration
+1. Jenis kinerja layanan
+        - kode layanan
+        - uraian kinerja layanan
+
+2. kateori kenerja layanan
+        - id_layanan
+        - Kode Katagori Kinerja Layanan 
+        - uraian Katagori Kinerja Layanan 
+        - role (pilih role operator dari unit kerja tertentu)
+
+3. IKU(Indikator kinerja Utama) kinerja layanan (dari KEMENKEU)
+        - id_kategori
+        - kode IKU
+        - uraian IKU
+
+4. Tujuan RSB
+        - kode Tujuan
+        - uraian Tujuan
+
+5. Sasaran Program
+        - kode Sasaran Program
+        - uraian Sasaran Program
+
+6. Sasaran Strategis
+        - kode Sasaran Strategis
+        - uraian Sasaran Strategis
+
+7. IKU RSB
+        - 
+
+8. Periode RSB
+        - tahun awal
+        - tahun akhir
+
+
+satu unit kerja 1 operator fungsi operator untuk mengisi capaian target diisi oleh admin
+
+
+iku dari KEMENKEU
+
+
+iku dari uinsu
+tujuan
+sasaran 
+stargic
