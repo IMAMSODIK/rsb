@@ -197,8 +197,8 @@
                     </p>
                 </div>
 
-                @csrf
                 <form class="space-y-md" id="resetForm" onsubmit="return false">
+                    @csrf
                     <input type="hidden" name="email" value="{{ $email }}">
                     <input type="hidden" name="token" value="{{ $token }}">
 
@@ -349,7 +349,6 @@
             });
         });
     </script>
-    @csrf
 </body>
 
 </html>

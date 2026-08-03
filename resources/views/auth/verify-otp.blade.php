@@ -197,8 +197,8 @@
                     </p>
                 </div>
 
-                @csrf
                 <form class="space-y-md" id="otpForm" onsubmit="return false">
+                    @csrf
                     <input type="hidden" name="email" value="{{ $email }}">
 
                     <div class="space-y-base">
@@ -440,7 +440,6 @@
             });
         });
     </script>
-    @csrf
 </body>
 
 </html>

@@ -195,8 +195,8 @@
                     <p class="font-body-sm text-body-sm text-on-surface-variant">Masukkan email untuk menerima kode OTP</p>
                 </div>
 
-                @csrf
                 <form class="space-y-md" id="forgotForm" onsubmit="return false">
+                    @csrf
                     <div class="space-y-base">
                         <label class="font-label-md text-label-md text-on-surface" for="email">Email</label>
                         <div class="relative">
@@ -307,7 +307,6 @@
             });
         });
     </script>
-    @csrf
 </body>
 
 </html>

@@ -203,8 +203,8 @@
                     <h1 class="font-headline-lg-mobile md:text-headline-lg text-primary mb-xs">Selamat Datang</h1>
                     <p class="font-body-sm text-body-sm text-on-surface-variant">Silakan masuk ke akun Anda</p>
                 </div>
-                @csrf
                 <form class="space-y-md" id="loginForm" onsubmit="return false">
+                    @csrf
                     <div class="space-y-base">
                         <label class="font-label-md text-label-md text-on-surface" for="email">Email</label>
                         <div class="relative">
