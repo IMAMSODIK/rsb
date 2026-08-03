@@ -1,6 +1,6 @@
 
 Toastify({
-  text: "Welcome to Unify Admin",
+  text: "Selamat datang",
   duration: 3000,
   close: true,
   avatar: 'dashboard_assets/images/user3.png',
