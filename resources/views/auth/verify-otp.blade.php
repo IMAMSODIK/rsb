@@ -170,14 +170,12 @@
                 </p>
             </div>
             <div class="absolute inset-0" id="carousel">
-                <div class="carousel-item active absolute inset-0">
-                    <img alt="Kampus Modern" class="w-full h-full object-cover"
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDouqth3arL9x8jKRYKWCFfNQWyU8oxgP2AyizRbYJBcjRHYn61EdiITof0QLbjs-7T6BSnu6NGRaQpz7ax-_-PE9VGEGiC1F5rWWHCrHp5D8Mq3N_fybOYL6ue7C0c44_tGl_tVFlmWJyA3oqzHmDQgS3gQLEF7jTLxesbNYRByz0IA5LZMbFacnrIf3mfi7IAH4mh5VbStc6ErlgpD65brxeubfw0Gow_PXT4wdo6T93LSn7Bkkyl" />
-                </div>
-                <div class="carousel-item absolute inset-0">
-                    <img alt="Auditorium" class="w-full h-full object-cover"
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXp4nNKAAB4TeykNRJH1ZxcfXxk_67PwVVeyneyL6WTH6VlK7Og66THdEKGlHSRFqmoDNe0XFtRJeRFRZULjW8USTNNOvPNlaw5yS63aVUKHxrPvxGlzpAQOdRp1rxJEYpLs4cIWvPC6xlPDknraNAgjTt6bR7kb5-WqDji0PnDQE4zb5k0oSg2T47DFVqroU_GGfXWiEQoEmmyNbaN-YhqdFm7x0stPVMadjzraoNCSZ9ezca6SpC" />
-                </div>
+                @foreach ($sliderItems as $index => $slide)
+                    <div class="carousel-item {{ $loop->first ? 'active' : '' }} absolute inset-0">
+                        <img alt="{{ $slide->judul ?? 'Slide' }}" class="w-full h-full object-cover"
+                            src="{{ $slide->gambar_url }}" />
+                    </div>
+                @endforeach
             </div>
         </div>
 
@@ -271,6 +269,7 @@
         let currentSlide = 0;
         const slides = document.querySelectorAll('.carousel-item');
         function nextSlide() {
+            if (slides.length === 0) return;
             slides[currentSlide].classList.remove('active');
             currentSlide = (currentSlide + 1) % slides.length;
             slides[currentSlide].classList.add('active');

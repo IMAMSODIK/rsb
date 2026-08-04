@@ -60,12 +60,12 @@ table migration
         - kode Sasaran Strategis
         - uraian Sasaran Strategis
 
-7. IKU RSB
-        - 
-
-8. Periode RSB
+7. Periode RSB
         - tahun awal
         - tahun akhir
+
+8. IKU RSB
+        - 
 
 
 satu unit kerja 1 operator fungsi operator untuk mengisi capaian target diisi oleh admin

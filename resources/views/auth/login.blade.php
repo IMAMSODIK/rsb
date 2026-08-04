@@ -175,18 +175,12 @@
                 </p>
             </div>
             <div class="absolute inset-0" id="carousel">
-                <div class="carousel-item active absolute inset-0">
-                    <img alt="Kampus Modern" class="w-full h-full object-cover"
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDouqth3arL9x8jKRYKWCFfNQWyU8oxgP2AyizRbYJBcjRHYn61EdiITof0QLbjs-7T6BSnu6NGRaQpz7ax-_-PE9VGEGiC1F5rWWHCrHp5D8Mq3N_fybOYL6ue7C0c44_tGl_tVFlmWJyA3oqzHmDQgS3gQLEF7jTLxesbNYRByz0IA5LZMbFacnrIf3mfi7IAH4mh5VbStc6ErlgpD65brxeubfw0Gow_PXT4wdo6T93LSn7Bkkyl" />
-                </div>
-                <div class="carousel-item absolute inset-0">
-                    <img alt="Auditorium" class="w-full h-full object-cover"
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXp4nNKAAB4TeykNRJH1ZxcfXxk_67PwVVeyneyL6WTH6VlK7Og66THdEKGlHSRFqmoDNe0XFtRJeRFRZULjW8USTNNOvPNlaw5yS63aVUKHxrPvxGlzpAQOdRp1rxJEYpLs4cIWvPC6xlPDknraNAgjTt6bR7kb5-WqDji0PnDQE4zb5k0oSg2T47DFVqroU_GGfXWiEQoEmmyNbaN-YhqdFm7x0stPVMadjzraoNCSZ9ezca6SpC" />
-                </div>
-                <div class="carousel-item absolute inset-0">
-                    <img alt="Mahasiswa" class="w-full h-full object-cover"
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLiO3lMKLJa8fXS-4clkOujT7JK7j7PiNxFSy7ncZzwpGJ4XQcIQMkcNVy35NwuSjqDZzbvr8F7Fm0BwBzDD4KDTjbpAXQjv9L8Awb8sogz5nFHsQDr6gcLOdUNcnIiA-NLM9amdq3leg3o47AH-UUue8je1H8nnSxvHvpgj3_V6jq2UHBOzubumBetQKjRfb3eOT3jufy_YIYPFo6EQ6dsqKsvFyZ8ShmCSj_mRNbkW6eXB9hxd94" />
-                </div>
+                @foreach ($sliderItems as $index => $slide)
+                    <div class="carousel-item {{ $loop->first ? 'active' : '' }} absolute inset-0">
+                        <img alt="{{ $slide->judul ?? 'Slide' }}" class="w-full h-full object-cover"
+                            src="{{ $slide->gambar_url }}" />
+                    </div>
+                @endforeach
             </div>
         </div>
 

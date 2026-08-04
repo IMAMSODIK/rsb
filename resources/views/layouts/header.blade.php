@@ -8,12 +8,20 @@
         </button>
     </div>
 
-    <div class="app-brand py-2 ms-3">
-        <a href="index.html" class="d-sm-block d-none">
-            <img src="{{ asset('dashboard_assets/images/logo.svg') }}" class="logo" alt="Bootstrap Gallery" />
-        </a>
-        <a href="index.html" class="d-sm-none d-block">
-            <img src="{{ asset('dashboard_assets/images/logo-sm.svg') }}" class="logo" alt="Bootstrap Gallery" />
+    <div class="app-brand py-3 ms-3">
+        <a href="{{ url('/dashboard') }}" class="d-flex align-items-center text-decoration-none">
+            <img src="{{ asset('auth_assets/logo/uinsu.png') }}" alt="{{ config('app.name') }}"
+                style="height: 80px; width: auto;" class="me-3">
+            <div class="d-flex flex-column">
+                <span class="fw-bold text-primary fs-4">
+                    {{ config('app.name') }}
+                </span>
+
+                <span class="text-muted small">
+                    {{ config('app.description') }}
+                </span>
+            </div>
+
         </a>
     </div>
 
@@ -52,62 +60,11 @@
             <div class="dropdown border-start">
                 <a class="dropdown-toggle d-flex px-3 py-4 position-relative" href="#!" role="button"
                     data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-exclamation-triangle fs-4 lh-1 text-secondary"></i>
-                    <span class="count-label warning"></span>
-                </a>
-                <div class="dropdown-menu dropdown-menu-end shadow-lg">
-                    <h5 class="fw-semibold px-3 py-2 text-primary">
-                        Notifications
-                    </h5>
-                    <div class="dropdown-item">
-                        <div class="d-flex py-2 border-bottom">
-                            <div class="icon-box md bg-success rounded-circle me-3">
-                                <i class="bi bi-exclamation-triangle text-white fs-4"></i>
-                            </div>
-                            <div class="m-0">
-                                <h6 class="mb-1 fw-semibold">Rosalie Deleon</h6>
-                                <p class="mb-1">You have new order.</p>
-                                <p class="small m-0 text-secondary">30 mins ago</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="dropdown-item">
-                        <div class="d-flex py-2 border-bottom">
-                            <div class="icon-box md bg-danger rounded-circle me-3">
-                                <i class="bi bi-exclamation-octagon text-white fs-4"></i>
-                            </div>
-                            <div class="m-0">
-                                <h6 class="mb-1 fw-semibold">Donovan Stuart</h6>
-                                <p class="mb-1">Membership has been expired.</p>
-                                <p class="small m-0 text-secondary">2 days ago</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="dropdown-item">
-                        <div class="d-flex py-2">
-                            <div class="icon-box md bg-warning rounded-circle me-3">
-                                <i class="bi bi-exclamation-square text-white fs-4"></i>
-                            </div>
-                            <div class="m-0">
-                                <h6 class="mb-1 fw-semibold">Roscoe Richards</h6>
-                                <p class="mb-1">Payment pending. Pay now.</p>
-                                <p class="small m-0 text-secondary">3 days ago</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="d-grid mx-3 my-1">
-                        <a href="javascript:void(0)" class="btn btn-primary">View all</a>
-                    </div>
-                </div>
-            </div>
-            <div class="dropdown border-start">
-                <a class="dropdown-toggle d-flex px-3 py-4 position-relative" href="#!" role="button"
-                    data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-bell fs-4 lh-1 text-secondary"></i>
                     <span class="count-label info"></span>
                 </a>
                 <div class="dropdown-menu dropdown-menu-end shadow-lg">
-                    <h5 class="fw-semibold px-3 py-2 text-primary">Updates</h5>
+                    <h5 class="fw-semibold px-3 py-2 text-primary">Notifications</h5>
                     <div class="dropdown-item">
                         <div class="d-flex py-2 border-bottom">
                             <div class="icon-box md bg-success rounded-circle me-3">
@@ -155,74 +112,24 @@
                     </div>
                 </div>
             </div>
-            <div class="dropdown border-start">
-                <a class="dropdown-toggle d-flex px-3 py-4 position-relative" href="#!" role="button"
-                    data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-envelope-open fs-4 lh-1 text-secondary"></i>
-                    <span class="count-label"></span>
-                </a>
-                <div class="dropdown-menu dropdown-menu-end shadow-lg">
-                    <h5 class="fw-semibold px-3 py-2 text-primary">Messages</h5>
-                    <div class="dropdown-item">
-                        <div class="d-flex py-2 border-bottom">
-                            <img src="{{ asset('dashboard_assets/images/user3.png') }}" class="img-3x me-3 rounded-5"
-                                alt="Admin Theme" />
-                            <div class="m-0">
-                                <h6 class="mb-1 fw-semibold">Angelia Payne</h6>
-                                <p class="mb-1">
-                                    Membership has been ended.
-                                </p>
-                                <p class="small m-0 text-secondary">Today, 07:30pm</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="dropdown-item">
-                        <div class="d-flex py-2 border-bottom">
-                            <img src="{{ asset('dashboard_assets/images/user1.png') }}" class="img-3x me-3 rounded-5"
-                                alt="Admin Theme" />
-                            <div class="m-0">
-                                <h6 class="mb-1 fw-semibold">Clyde Fowler</h6>
-                                <p class="mb-1">
-                                    Congratulate, James for new job.
-                                </p>
-                                <p class="small m-0 text-secondary">Today, 08:00pm</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="dropdown-item">
-                        <div class="d-flex py-2">
-                            <img src="{{ asset('dashboard_assets/images/user4.png') }}" class="img-3x me-3 rounded-5"
-                                alt="Admin Theme" />
-                            <div class="m-0">
-                                <h6 class="mb-1 fw-semibold">Sophie Michiels</h6>
-                                <p class="mb-1">
-                                    Lewis added new schedule release.
-                                </p>
-                                <p class="small m-0 text-secondary">Today, 09:30pm</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="d-grid mx-3 my-1">
-                        <a href="javascript:void(0)" class="btn btn-primary">View all</a>
-                    </div>
-                </div>
-            </div>
         </div>
         <div class="dropdown ms-2">
             <a id="userSettings" class="dropdown-toggle d-flex py-2 align-items-center text-decoration-none"
                 href="#!" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <img src="{{ asset('dashboard_assets/images/user.png') }}" class="rounded-2 img-3x"
-                    alt="Bootstrap Gallery" />
-                <span class="ms-2 text-truncate d-lg-block d-none">Anne Santiago</span>
+                    alt="{{ config('app.name') }}" />
+                <span class="ms-2 text-truncate d-lg-block d-none">{{ Auth::user()->name ?? 'Guest' }}</span>
             </a>
             <div class="dropdown-menu dropdown-menu-end shadow-lg">
                 <div class="header-action-links mx-3 gap-2">
-                    <a class="dropdown-item" href="profile.html"><i class="bi bi-person text-primary"></i>Profile</a>
-                    <a class="dropdown-item" href="settings.html"><i class="bi bi-gear text-danger"></i>Settings</a>
-                    <a class="dropdown-item" href="widgets.html"><i class="bi bi-box text-success"></i>Widgets</a>
+                    <a class="dropdown-item" href="#!"><i class="bi bi-person text-primary"></i>Profile</a>
+                    <a class="dropdown-item" href="#!"><i class="bi bi-gear text-danger"></i>Settings</a>
                 </div>
                 <div class="mx-3 mt-2 d-grid">
-                    <a href="login.html" class="btn btn-primary btn-sm">Logout</a>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="btn btn-primary btn-sm w-100">Logout</button>
+                    </form>
                 </div>
             </div>
         </div>

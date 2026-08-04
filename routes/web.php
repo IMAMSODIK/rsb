@@ -2,6 +2,16 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\IkuLayananController;
+use App\Http\Controllers\JenisLayananController;
+use App\Http\Controllers\KategoriLayananController;
+use App\Http\Controllers\PeriodeRsbController;
+use App\Http\Controllers\SasaranProgramController;
+use App\Http\Controllers\SasaranStrategisController;
+use App\Http\Controllers\SliderItemController;
+use App\Http\Controllers\TujuanRsbController;
+use App\Http\Controllers\UnitKerjaController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/home', '/dashboard');
@@ -11,6 +21,24 @@ Route::redirect('/', '/dashboard');
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    // Master Data
+    Route::prefix('master')->name('master.')->group(function () {
+        Route::resource('unit-kerja', UnitKerjaController::class)->except(['create', 'edit', 'show']);
+        Route::resource('users', UserController::class)->except(['create', 'edit', 'show']);
+        Route::resource('jenis-layanan', JenisLayananController::class)->except(['create', 'edit', 'show']);
+        Route::resource('kategori-layanan', KategoriLayananController::class)->except(['create', 'edit', 'show']);
+        Route::resource('iku-layanan', IkuLayananController::class)->except(['create', 'edit', 'show']);
+        Route::resource('tujuan-rsb', TujuanRsbController::class)->except(['create', 'edit', 'show']);
+        Route::resource('sasaran-program', SasaranProgramController::class)->except(['create', 'edit', 'show']);
+        Route::resource('sasaran-strategis', SasaranStrategisController::class)->except(['create', 'edit', 'show']);
+        Route::resource('periode-rsb', PeriodeRsbController::class)->except(['create', 'edit', 'show']);
+
+        // Khusus admin
+        Route::middleware(['admin'])->group(function () {
+            Route::resource('slider', SliderItemController::class)->except(['create', 'edit', 'show']);
+        });
+    });
 });
 
 // Guest routes (hanya untuk user yang belum login)
