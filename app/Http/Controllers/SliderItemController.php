@@ -21,7 +21,7 @@ class SliderItemController extends Controller
                 return response()->json(['data' => $data]);
             }
 
-            return view('master.slider.index');
+            return view('master.settings.index');
         } catch (Exception $e) {
             Log::error('SliderItem index error: '.$e->getMessage());
             if ($request->ajax()) {

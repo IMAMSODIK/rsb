@@ -94,7 +94,7 @@
 @push('scripts')
 <script>
     $(function () {
-        const BASE = '{{ route("master.slider.index") }}';
+        const BASE = '{{ route("master.settings.index") }}';
         let table;
 
         table = $('#datatable').DataTable({

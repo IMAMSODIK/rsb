@@ -71,14 +71,13 @@
                     <span class="menu-text">Periode RSB</span>
                 </a>
             </li>
-            @if (auth()->user()?->role === 'admin')
-            <li class="{{ $is('master.slider.*') }}">
-                <a href="{{ route('master.slider.index') }}">
-                    <i class="bi bi-images"></i>
-                    <span class="menu-text">Slider Login</span>
+            <hr>
+            <li class="{{ $is('master.settings.*') }}">
+                <a href="{{ route('master.settings.index') }}">
+                    <i class="bi bi-gear"></i>
+                    <span class="menu-text">Pengaturan</span>
                 </a>
             </li>
-            @endif
         </ul>
     </div>
 

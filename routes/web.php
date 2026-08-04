@@ -33,11 +33,7 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('sasaran-program', SasaranProgramController::class)->except(['create', 'edit', 'show']);
         Route::resource('sasaran-strategis', SasaranStrategisController::class)->except(['create', 'edit', 'show']);
         Route::resource('periode-rsb', PeriodeRsbController::class)->except(['create', 'edit', 'show']);
-
-        // Khusus admin
-        Route::middleware(['admin'])->group(function () {
-            Route::resource('slider', SliderItemController::class)->except(['create', 'edit', 'show']);
-        });
+        Route::resource('settings', SliderItemController::class)->except(['create', 'edit', 'show']);
     });
 });
 
