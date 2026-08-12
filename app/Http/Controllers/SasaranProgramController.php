@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\SasaranProgram;
+use App\Models\TujuanRsb;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,10 +16,11 @@ class SasaranProgramController extends Controller
     {
         try {
             if ($request->ajax()) {
-                $data = SasaranProgram::orderBy('kode_sasaran_program')->get();
+                $data = SasaranProgram::with('tujuan')->orderBy('kode_sasaran_program')->get();
                 return response()->json(['data' => $data]);
             }
-            return view('master.sasaran-program.index');
+            $tujuan = TujuanRsb::orderBy('kode_tujuan')->get();
+            return view('master.sasaran-program.index', compact('tujuan'));
         } catch (Exception $e) {
             Log::error('SasaranProgram index error: ' . $e->getMessage());
             if ($request->ajax()) {
@@ -32,13 +34,30 @@ class SasaranProgramController extends Controller
     {
         try {
             $data = $request->validate([
-                'kode_sasaran_program' => 'required|string|max:50|unique:sasaran_program,kode_sasaran_program',
+                'tujuan_id'            => 'required|exists:tujuan_rsb,id',
+                'kode_sasaran_program' => 'required|string|max:49|regex:/^[^.]+$/',
                 'uraian'               => 'required|string',
             ], [
+                'tujuan_id.required'            => 'Tujuan RSB wajib dipilih.',
+                'tujuan_id.exists'              => 'Tujuan RSB tidak valid.',
                 'kode_sasaran_program.required' => 'Kode sasaran program wajib diisi.',
-                'kode_sasaran_program.unique'   => 'Kode sasaran program sudah digunakan.',
+                'kode_sasaran_program.regex'    => 'Kode tambahan tidak boleh mengandung titik.',
                 'uraian.required'               => 'Uraian wajib diisi.',
             ]);
+
+            $tujuan = TujuanRsb::findOrFail($data['tujuan_id']);
+            $kodeLengkap = $tujuan->kode_tujuan . '.' . trim($data['kode_sasaran_program']);
+            if (strlen($kodeLengkap) > 50) {
+                throw ValidationException::withMessages([
+                    'kode_sasaran_program' => 'Kode sasaran program maksimal 50 karakter.',
+                ]);
+            }
+            if (SasaranProgram::where('kode_sasaran_program', $kodeLengkap)->exists()) {
+                throw ValidationException::withMessages([
+                    'kode_sasaran_program' => 'Kode sasaran program sudah digunakan.',
+                ]);
+            }
+            $data['kode_sasaran_program'] = $kodeLengkap;
 
             SasaranProgram::create($data);
 
@@ -66,13 +85,32 @@ class SasaranProgramController extends Controller
             $item = SasaranProgram::findOrFail($id);
 
             $data = $request->validate([
-                'kode_sasaran_program' => 'required|string|max:50|unique:sasaran_program,kode_sasaran_program,' . $id,
+                'tujuan_id'            => 'required|exists:tujuan_rsb,id',
+                'kode_sasaran_program' => 'required|string|max:49|regex:/^[^.]+$/',
                 'uraian'               => 'required|string',
             ], [
+                'tujuan_id.required'            => 'Tujuan RSB wajib dipilih.',
+                'tujuan_id.exists'              => 'Tujuan RSB tidak valid.',
                 'kode_sasaran_program.required' => 'Kode sasaran program wajib diisi.',
-                'kode_sasaran_program.unique'   => 'Kode sasaran program sudah digunakan.',
+                'kode_sasaran_program.regex'    => 'Kode tambahan tidak boleh mengandung titik.',
                 'uraian.required'               => 'Uraian wajib diisi.',
             ]);
+
+            $tujuan = TujuanRsb::findOrFail($data['tujuan_id']);
+            $kodeLengkap = $tujuan->kode_tujuan . '.' . trim($data['kode_sasaran_program']);
+            if (strlen($kodeLengkap) > 50) {
+                throw ValidationException::withMessages([
+                    'kode_sasaran_program' => 'Kode sasaran program maksimal 50 karakter.',
+                ]);
+            }
+            if (SasaranProgram::where('kode_sasaran_program', $kodeLengkap)
+                ->where('id', '!=', $id)
+                ->exists()) {
+                throw ValidationException::withMessages([
+                    'kode_sasaran_program' => 'Kode sasaran program sudah digunakan.',
+                ]);
+            }
+            $data['kode_sasaran_program'] = $kodeLengkap;
 
             $item->update($data);
 

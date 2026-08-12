@@ -27,7 +27,6 @@
                             <thead>
                                 <tr>
                                     <th width="60">No</th>
-                                    <th>Kategori Layanan</th>
                                     <th>Kode IKU</th>
                                     <th>Uraian</th>
                                     <th width="120" class="text-end">Aksi</th>
@@ -55,17 +54,21 @@
                     <div class="modal-body">
                         <input type="hidden" name="id" id="recordId">
                         <div class="mb-3">
-                            <label class="form-label">Kategori Kinerja Layanan <span class="text-danger">*</span></label>
-                            <select name="kategori_id" id="kategori_id" class="form-select" required>
-                                <option value="">-- Pilih Kategori Layanan --</option>
-                                @foreach ($kategori as $item)
-                                    <option value="{{ $item->id }}">{{ $item->kode_kategori }} - {{ $item->uraian }}</option>
+                            <label class="form-label">Sasaran Strategis <span class="text-danger">*</span></label>
+                            <select name="sasaran_strategis_id" id="sasaran_strategis_id" class="form-select" required>
+                                <option value="">-- Pilih Sasaran Strategis --</option>
+                                @foreach ($sasaranStrategis as $item)
+                                    <option value="{{ $item->id }}" data-kode="{{ $item->kode_sasaran_strategis }}">{{ $item->kode_sasaran_strategis }} - {{ $item->uraian }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Kode IKU <span class="text-danger">*</span></label>
-                            <input type="text" name="kode_iku" id="kode_iku" class="form-control" required>
+                            <div class="input-group">
+                                <span class="input-group-text" id="kodePrefix">-</span>
+                                <input type="text" name="kode_iku" id="kode_iku" class="form-control" placeholder="Kode tambahan" required>
+                            </div>
+                            <small class="text-muted">Prefix mengikuti kode Sasaran Strategis yang dipilih.</small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Uraian IKU <span class="text-danger">*</span></label>
@@ -90,10 +93,9 @@
 
         table = $('#datatable').DataTable({
             ajax: { url: BASE, dataSrc: 'data' },
-            order: [[2, 'asc']],
+            order: [[1, 'asc']],
             columns: [
                 { data: null, render: (d, t, r, m) => m.row + 1 },
-                { data: 'kategori.kode_kategori', defaultContent: '-' },
                 { data: 'kode_iku' },
                 { data: 'uraian' },
                 {
@@ -114,11 +116,26 @@
 
         const modal = new bootstrap.Modal($('#formModal')[0]);
 
+        function updateKodePrefix() {
+            const kodeStrategis = $('#sasaran_strategis_id option:selected').data('kode');
+            $('#kodePrefix').text(kodeStrategis ? `${kodeStrategis}.` : '-');
+        }
+
+        function setKodeSuffix(kodeIku, kodeStrategis) {
+            const prefix = kodeStrategis ? `${kodeStrategis}.` : '';
+            $('#kode_iku').val(
+                prefix && kodeIku.startsWith(prefix) ? kodeIku.slice(prefix.length) : kodeIku
+            );
+        }
+
+        $('#sasaran_strategis_id').on('change', updateKodePrefix);
+
         $('#formModal').on('hidden.bs.modal', function () {
             $('#formData')[0].reset();
             $('#recordId').val('');
             $('#formMethod').val('POST');
             $('#modalTitle').text('Tambah IKU Kinerja Layanan');
+            updateKodePrefix();
         });
 
         $('#btnAdd').on('click', () => modal.show());
@@ -127,8 +144,9 @@
             const row = table.row($(this).closest('tr')).data();
             $('#modalTitle').text('Edit IKU Kinerja Layanan');
             $('#recordId').val(row.id);
-            $('#kategori_id').val(row.kategori_id);
-            $('#kode_iku').val(row.kode_iku);
+            $('#sasaran_strategis_id').val(row.sasaran_strategis_id);
+            updateKodePrefix();
+            setKodeSuffix(row.kode_iku, row.sasaran_strategis?.kode_sasaran_strategis);
             $('#uraian').val(row.uraian);
             modal.show();
         });

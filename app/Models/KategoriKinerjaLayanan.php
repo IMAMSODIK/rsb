@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class KategoriKinerjaLayanan extends Model
 {
@@ -36,11 +35,4 @@ class KategoriKinerjaLayanan extends Model
         return $this->belongsTo(UnitKerja::class);
     }
 
-    /**
-     * Relasi ke IKU Kinerja Layanan.
-     */
-    public function ikuLayanans(): HasMany
-    {
-        return $this->hasMany(IkuKinerjaLayanan::class, 'kategori_id');
-    }
 }

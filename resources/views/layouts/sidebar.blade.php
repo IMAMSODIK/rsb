@@ -41,12 +41,6 @@
                     <span class="menu-text">Kategori Kinerja Layanan</span>
                 </a>
             </li>
-            <li class="{{ $is('master.iku-layanan.*') }}">
-                <a href="{{ route('master.iku-layanan.index') }}">
-                    <i class="bi bi-graph-up"></i>
-                    <span class="menu-text">IKU Kinerja Layanan</span>
-                </a>
-            </li>
             <li class="{{ $is('master.tujuan-rsb.*') }}">
                 <a href="{{ route('master.tujuan-rsb.index') }}">
                     <i class="bi bi-bullseye"></i>
@@ -63,6 +57,12 @@
                 <a href="{{ route('master.sasaran-strategis.index') }}">
                     <i class="bi bi-flag"></i>
                     <span class="menu-text">Sasaran Strategis</span>
+                </a>
+            </li>
+            <li class="{{ $is('master.iku-layanan.*') }}">
+                <a href="{{ route('master.iku-layanan.index') }}">
+                    <i class="bi bi-graph-up"></i>
+                    <span class="menu-text">IKU Kinerja Layanan</span>
                 </a>
             </li>
             <li class="{{ $is('master.periode-rsb.*') }}">

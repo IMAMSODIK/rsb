@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\IkuKinerjaLayanan;
-use App\Models\KategoriKinerjaLayanan;
+use App\Models\SasaranStrategis;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,11 +16,11 @@ class IkuLayananController extends Controller
     {
         try {
             if ($request->ajax()) {
-                $data = IkuKinerjaLayanan::with('kategori')->orderBy('kode_iku')->get();
+                $data = IkuKinerjaLayanan::with('sasaranStrategis')->orderBy('kode_iku')->get();
                 return response()->json(['data' => $data]);
             }
-            $kategori = KategoriKinerjaLayanan::orderBy('kode_kategori')->get();
-            return view('master.iku-layanan.index', compact('kategori'));
+            $sasaranStrategis = SasaranStrategis::orderBy('kode_sasaran_strategis')->get();
+            return view('master.iku-layanan.index', compact('sasaranStrategis'));
         } catch (Exception $e) {
             Log::error('IkuLayanan index error: ' . $e->getMessage());
             if ($request->ajax()) {
@@ -34,16 +34,30 @@ class IkuLayananController extends Controller
     {
         try {
             $data = $request->validate([
-                'kategori_id' => 'required|exists:kategori_kinerja_layanan,id',
-                'kode_iku'    => 'required|string|max:50|unique:iku_kinerja_layanan,kode_iku',
-                'uraian'      => 'required|string',
+                'sasaran_strategis_id' => 'required|exists:sasaran_strategis,id',
+                'kode_iku'            => 'required|string|max:49|regex:/^[^.]+$/',
+                'uraian'              => 'required|string',
             ], [
-                'kategori_id.required' => 'Kategori layanan wajib dipilih.',
-                'kategori_id.exists'   => 'Kategori layanan tidak valid.',
-                'kode_iku.required'    => 'Kode IKU wajib diisi.',
-                'kode_iku.unique'      => 'Kode IKU sudah digunakan.',
-                'uraian.required'      => 'Uraian wajib diisi.',
+                'sasaran_strategis_id.required' => 'Sasaran strategis wajib dipilih.',
+                'sasaran_strategis_id.exists'   => 'Sasaran strategis tidak valid.',
+                'kode_iku.required'             => 'Kode IKU wajib diisi.',
+                'kode_iku.regex'                => 'Kode tambahan tidak boleh mengandung titik.',
+                'uraian.required'               => 'Uraian wajib diisi.',
             ]);
+
+            $sasaranStrategis = SasaranStrategis::findOrFail($data['sasaran_strategis_id']);
+            $kodeLengkap = $sasaranStrategis->kode_sasaran_strategis . '.' . trim($data['kode_iku']);
+            if (strlen($kodeLengkap) > 50) {
+                throw ValidationException::withMessages([
+                    'kode_iku' => 'Kode IKU maksimal 50 karakter.',
+                ]);
+            }
+            if (IkuKinerjaLayanan::where('kode_iku', $kodeLengkap)->exists()) {
+                throw ValidationException::withMessages([
+                    'kode_iku' => 'Kode IKU sudah digunakan.',
+                ]);
+            }
+            $data['kode_iku'] = $kodeLengkap;
 
             IkuKinerjaLayanan::create($data);
 
@@ -71,16 +85,32 @@ class IkuLayananController extends Controller
             $item = IkuKinerjaLayanan::findOrFail($id);
 
             $data = $request->validate([
-                'kategori_id' => 'required|exists:kategori_kinerja_layanan,id',
-                'kode_iku'    => 'required|string|max:50|unique:iku_kinerja_layanan,kode_iku,' . $id,
-                'uraian'      => 'required|string',
+                'sasaran_strategis_id' => 'required|exists:sasaran_strategis,id',
+                'kode_iku'            => 'required|string|max:49|regex:/^[^.]+$/',
+                'uraian'              => 'required|string',
             ], [
-                'kategori_id.required' => 'Kategori layanan wajib dipilih.',
-                'kategori_id.exists'   => 'Kategori layanan tidak valid.',
-                'kode_iku.required'    => 'Kode IKU wajib diisi.',
-                'kode_iku.unique'      => 'Kode IKU sudah digunakan.',
-                'uraian.required'      => 'Uraian wajib diisi.',
+                'sasaran_strategis_id.required' => 'Sasaran strategis wajib dipilih.',
+                'sasaran_strategis_id.exists'   => 'Sasaran strategis tidak valid.',
+                'kode_iku.required'             => 'Kode IKU wajib diisi.',
+                'kode_iku.regex'                => 'Kode tambahan tidak boleh mengandung titik.',
+                'uraian.required'               => 'Uraian wajib diisi.',
             ]);
+
+            $sasaranStrategis = SasaranStrategis::findOrFail($data['sasaran_strategis_id']);
+            $kodeLengkap = $sasaranStrategis->kode_sasaran_strategis . '.' . trim($data['kode_iku']);
+            if (strlen($kodeLengkap) > 50) {
+                throw ValidationException::withMessages([
+                    'kode_iku' => 'Kode IKU maksimal 50 karakter.',
+                ]);
+            }
+            if (IkuKinerjaLayanan::where('kode_iku', $kodeLengkap)
+                ->where('id', '!=', $id)
+                ->exists()) {
+                throw ValidationException::withMessages([
+                    'kode_iku' => 'Kode IKU sudah digunakan.',
+                ]);
+            }
+            $data['kode_iku'] = $kodeLengkap;
 
             $item->update($data);
 

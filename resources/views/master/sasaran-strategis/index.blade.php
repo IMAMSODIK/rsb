@@ -54,8 +54,21 @@
                     <div class="modal-body">
                         <input type="hidden" name="id" id="recordId">
                         <div class="mb-3">
+                            <label class="form-label">Sasaran Program <span class="text-danger">*</span></label>
+                            <select name="sasaran_program_id" id="sasaran_program_id" class="form-select" required>
+                                <option value="">-- Pilih Sasaran Program --</option>
+                                @foreach ($sasaranProgram as $item)
+                                    <option value="{{ $item->id }}" data-kode="{{ $item->kode_sasaran_program }}">{{ $item->kode_sasaran_program }} - {{ $item->uraian }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="mb-3">
                             <label class="form-label">Kode Sasaran Strategis <span class="text-danger">*</span></label>
-                            <input type="text" name="kode_sasaran_strategis" id="kode_sasaran_strategis" class="form-control" required>
+                            <div class="input-group">
+                                <span class="input-group-text" id="kodePrefix">-</span>
+                                <input type="text" name="kode_sasaran_strategis" id="kode_sasaran_strategis" class="form-control" placeholder="Kode tambahan" required>
+                            </div>
+                            <small class="text-muted">Prefix mengikuti kode Sasaran Program yang dipilih.</small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Uraian Sasaran Strategis <span class="text-danger">*</span></label>
@@ -103,11 +116,26 @@
 
         const modal = new bootstrap.Modal($('#formModal')[0]);
 
+        function updateKodePrefix() {
+            const kodeProgram = $('#sasaran_program_id option:selected').data('kode');
+            $('#kodePrefix').text(kodeProgram ? `${kodeProgram}.` : '-');
+        }
+
+        function setKodeSuffix(kodeStrategis, kodeProgram) {
+            const prefix = kodeProgram ? `${kodeProgram}.` : '';
+            $('#kode_sasaran_strategis').val(
+                prefix && kodeStrategis.startsWith(prefix) ? kodeStrategis.slice(prefix.length) : kodeStrategis
+            );
+        }
+
+        $('#sasaran_program_id').on('change', updateKodePrefix);
+
         $('#formModal').on('hidden.bs.modal', function () {
             $('#formData')[0].reset();
             $('#recordId').val('');
             $('#formMethod').val('POST');
             $('#modalTitle').text('Tambah Sasaran Strategis');
+            updateKodePrefix();
         });
 
         $('#btnAdd').on('click', () => modal.show());
@@ -116,7 +144,9 @@
             const row = table.row($(this).closest('tr')).data();
             $('#modalTitle').text('Edit Sasaran Strategis');
             $('#recordId').val(row.id);
-            $('#kode_sasaran_strategis').val(row.kode_sasaran_strategis);
+            $('#sasaran_program_id').val(row.sasaran_program_id);
+            updateKodePrefix();
+            setKodeSuffix(row.kode_sasaran_strategis, row.sasaran_program?.kode_sasaran_program);
             $('#uraian').val(row.uraian);
             modal.show();
         });

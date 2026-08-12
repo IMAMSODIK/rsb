@@ -13,16 +13,13 @@ class IkuKinerjaLayanan extends Model
     protected $table = 'iku_kinerja_layanan';
 
     protected $fillable = [
-        'kategori_id',
+        'sasaran_strategis_id',
         'kode_iku',
         'uraian',
     ];
 
-    /**
-     * Relasi ke Kategori Kinerja Layanan.
-     */
-    public function kategori(): BelongsTo
+    public function sasaranStrategis(): BelongsTo
     {
-        return $this->belongsTo(KategoriKinerjaLayanan::class, 'kategori_id');
+        return $this->belongsTo(SasaranStrategis::class, 'sasaran_strategis_id');
     }
 }

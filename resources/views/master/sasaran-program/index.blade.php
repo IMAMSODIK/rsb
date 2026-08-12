@@ -54,8 +54,21 @@
                     <div class="modal-body">
                         <input type="hidden" name="id" id="recordId">
                         <div class="mb-3">
+                            <label class="form-label">Tujuan RSB <span class="text-danger">*</span></label>
+                            <select name="tujuan_id" id="tujuan_id" class="form-select" required>
+                                <option value="">-- Pilih Tujuan RSB --</option>
+                                @foreach ($tujuan as $item)
+                                    <option value="{{ $item->id }}" data-kode="{{ $item->kode_tujuan }}">{{ $item->kode_tujuan }} - {{ $item->uraian }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="mb-3">
                             <label class="form-label">Kode Sasaran Program <span class="text-danger">*</span></label>
-                            <input type="text" name="kode_sasaran_program" id="kode_sasaran_program" class="form-control" required>
+                            <div class="input-group">
+                                <span class="input-group-text" id="kodePrefix">-</span>
+                                <input type="text" name="kode_sasaran_program" id="kode_sasaran_program" class="form-control" placeholder="Kode tambahan" required>
+                            </div>
+                            <small class="text-muted">Prefix mengikuti kode Tujuan RSB yang dipilih.</small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Uraian Sasaran Program <span class="text-danger">*</span></label>
@@ -103,11 +116,26 @@
 
         const modal = new bootstrap.Modal($('#formModal')[0]);
 
+        function updateKodePrefix() {
+            const kodeTujuan = $('#tujuan_id option:selected').data('kode');
+            $('#kodePrefix').text(kodeTujuan ? `${kodeTujuan}.` : '-');
+        }
+
+        function setKodeSuffix(kodeProgram, kodeTujuan) {
+            const prefix = kodeTujuan ? `${kodeTujuan}.` : '';
+            $('#kode_sasaran_program').val(
+                prefix && kodeProgram.startsWith(prefix) ? kodeProgram.slice(prefix.length) : kodeProgram
+            );
+        }
+
+        $('#tujuan_id').on('change', updateKodePrefix);
+
         $('#formModal').on('hidden.bs.modal', function () {
             $('#formData')[0].reset();
             $('#recordId').val('');
             $('#formMethod').val('POST');
             $('#modalTitle').text('Tambah Sasaran Program');
+            updateKodePrefix();
         });
 
         $('#btnAdd').on('click', () => modal.show());
@@ -116,7 +144,9 @@
             const row = table.row($(this).closest('tr')).data();
             $('#modalTitle').text('Edit Sasaran Program');
             $('#recordId').val(row.id);
-            $('#kode_sasaran_program').val(row.kode_sasaran_program);
+            $('#tujuan_id').val(row.tujuan_id);
+            updateKodePrefix();
+            setKodeSuffix(row.kode_sasaran_program, row.tujuan?.kode_tujuan);
             $('#uraian').val(row.uraian);
             modal.show();
         });
