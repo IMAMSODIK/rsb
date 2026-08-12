@@ -34,4 +34,9 @@ class UnitKerja extends Model
     {
         return $this->hasMany(KategoriKinerjaLayanan::class);
     }
+
+    public function ikuKinerjaLayanans(): HasMany
+    {
+        return $this->hasMany(IkuKinerjaLayanan::class, 'unit_kerja_id');
+    }
 }

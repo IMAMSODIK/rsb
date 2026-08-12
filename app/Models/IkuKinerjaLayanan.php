@@ -14,6 +14,7 @@ class IkuKinerjaLayanan extends Model
 
     protected $fillable = [
         'sasaran_strategis_id',
+        'unit_kerja_id',
         'kode_iku',
         'uraian',
     ];
@@ -21,5 +22,10 @@ class IkuKinerjaLayanan extends Model
     public function sasaranStrategis(): BelongsTo
     {
         return $this->belongsTo(SasaranStrategis::class, 'sasaran_strategis_id');
+    }
+
+    public function unitKerja(): BelongsTo
+    {
+        return $this->belongsTo(UnitKerja::class, 'unit_kerja_id');
     }
 }

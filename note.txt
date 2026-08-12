@@ -78,3 +78,37 @@ iku dari uinsu
 tujuan
 sasaran 
 stargic
+
+
+
+
+
+
+tujuan ngikat sasaran program
+sasaran ngikat sasara strategis
+iku mengikat ke sasaaran strategis
+
+kode dipisahkan pakai titik
+
+raget tahunan, realisasi persemeter
+
+
+iku ada unit kerja
+
+
+
+------------------------------------------------------------------------------
+pilih periode taget -> muncul table yang ada target tahunan (bisa simpan draft)
+sama dengan iku (iku ngambil dari table iku)
+
+tambah unit pic
+
+pada capaian upload keterangan dan upload dokumen
+
+
+target, realisasi, capaian, persentaisi, bukti (kolom tambahan pad target), detail
+capain di entry semester 1 dan 2, relisasi juga
+
+persentasi adalah target pertahun
+
+realisasi

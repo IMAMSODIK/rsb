@@ -5,10 +5,6 @@
 
 <nav id="sidebar" class="sidebar-wrapper">
 
-    <div class="shop-profile">
-        <p class="mb-1 fw-bold text-primary">Master</p>
-    </div>
-
     <div class="sidebarMenuScroll">
         <ul class="sidebar-menu">
             <li class="{{ $is('dashboard') }}">
@@ -17,6 +13,13 @@
                     <span class="menu-text">Dashboard</span>
                 </a>
             </li>
+        </ul>
+
+        @if(auth()->user()->role === 'admin')
+        <div class="shop-profile">
+            <p class="mb-1 fw-bold text-primary">Master</p>
+        </div>
+        <ul class="sidebar-menu">
             <li class="{{ $is('master.users.*') }}">
                 <a href="{{ route('master.users.index') }}">
                     <i class="bi bi-people"></i>
@@ -71,6 +74,59 @@
                     <span class="menu-text">Periode RSB</span>
                 </a>
             </li>
+        </ul>
+        @endif
+
+        <div class="shop-profile mt-3">
+            <p class="mb-1 fw-bold text-primary">Monitoring</p>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="{{ $is('monitoring.target-kinerja-layanan') }}">
+                <a href="{{ route('monitoring.target-kinerja-layanan') }}">
+                    <i class="bi bi-bullseye"></i>
+                    <span class="menu-text">Target Kinerja Layanan</span>
+                </a>
+            </li>
+            <li class="{{ $is('monitoring.realisasi-kinerja-layanan') }}">
+                <a href="{{ route('monitoring.realisasi-kinerja-layanan') }}">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <span class="menu-text">Realisasi Kinerja Layanan</span>
+                </a>
+            </li>
+            <li class="{{ $is('monitoring.target-kinerja-iku-rsb') }}">
+                <a href="{{ route('monitoring.target-kinerja-iku-rsb') }}">
+                    <i class="bi bi-bar-chart-line"></i>
+                    <span class="menu-text">Target Kinerja IKU RSB</span>
+                </a>
+            </li>
+            <li class="{{ $is('monitoring.realisasi-kinerja-iku-rsb') }}">
+                <a href="{{ route('monitoring.realisasi-kinerja-iku-rsb') }}">
+                    <i class="bi bi-clipboard-data"></i>
+                    <span class="menu-text">Realisasi Kinerja IKU RSB</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="shop-profile mt-3">
+            <p class="mb-1 fw-bold text-primary">Report</p>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="{{ $is('monitoring.laporan-capaian-kinerja-layanan*') }}">
+                <a href="{{ route('monitoring.laporan-capaian-kinerja-layanan') }}">
+                    <i class="bi bi-file-earmark-bar-graph"></i>
+                    <span class="menu-text">Laporan Capaian Kinerja Layanan</span>
+                </a>
+            </li>
+            <li class="{{ $is('monitoring.laporan-capaian-kinerja-iku*') }}">
+                <a href="{{ route('monitoring.laporan-capaian-kinerja-iku') }}">
+                    <i class="bi bi-file-earmark-spreadsheet"></i>
+                    <span class="menu-text">Laporan Capaian Kinerja IKU</span>
+                </a>
+            </li>
+        </ul>
+
+        @if(auth()->user()->role === 'admin')
+        <ul class="sidebar-menu">
             <hr>
             <li class="{{ $is('master.settings.*') }}">
                 <a href="{{ route('master.settings.index') }}">
@@ -79,6 +135,7 @@
                 </a>
             </li>
         </ul>
+        @endif
     </div>
 
 </nav>

@@ -27,6 +27,7 @@
                             <thead>
                                 <tr>
                                     <th width="60">No</th>
+                                    <th>Unit Kerja</th>
                                     <th>Kode IKU</th>
                                     <th>Uraian</th>
                                     <th width="120" class="text-end">Aksi</th>
@@ -63,6 +64,15 @@
                             </select>
                         </div>
                         <div class="mb-3">
+                            <label class="form-label">Unit Kerja <span class="text-danger">*</span></label>
+                            <select name="unit_kerja_id" id="unit_kerja_id" class="form-select" required>
+                                <option value="">-- Pilih Unit Kerja --</option>
+                                @foreach ($unitKerja as $item)
+                                    <option value="{{ $item->id }}">{{ $item->kode_unit }} - {{ $item->nama_unit }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="mb-3">
                             <label class="form-label">Kode IKU <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text" id="kodePrefix">-</span>
@@ -93,9 +103,10 @@
 
         table = $('#datatable').DataTable({
             ajax: { url: BASE, dataSrc: 'data' },
-            order: [[1, 'asc']],
+            order: [[2, 'asc']],
             columns: [
                 { data: null, render: (d, t, r, m) => m.row + 1 },
+                { data: 'unit_kerja.kode_unit', defaultContent: '-' },
                 { data: 'kode_iku' },
                 { data: 'uraian' },
                 {
@@ -145,6 +156,7 @@
             $('#modalTitle').text('Edit IKU Kinerja Layanan');
             $('#recordId').val(row.id);
             $('#sasaran_strategis_id').val(row.sasaran_strategis_id);
+            $('#unit_kerja_id').val(row.unit_kerja_id);
             updateKodePrefix();
             setKodeSuffix(row.kode_iku, row.sasaran_strategis?.kode_sasaran_strategis);
             $('#uraian').val(row.uraian);

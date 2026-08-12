@@ -66,6 +66,7 @@
                                     min="2000" max="2100" required>
                             </div>
                         </div>
+                        <small class="text-muted">Periode mengikuti blok 5 tahunan, contoh: 2025 - 2029, 2020 - 2024.</small>
                         <div class="form-check">
                             <input type="checkbox" name="is_active" id="is_active" class="form-check-input" value="1">
                             <label for="is_active" class="form-check-label">Set sebagai periode aktif</label>
@@ -117,6 +118,16 @@
         });
 
         const modal = new bootstrap.Modal($('#formModal')[0]);
+
+        function validatePeriodRange() {
+            const tahunAwal = parseInt($('#tahun_awal').val(), 10);
+            const tahunAkhir = parseInt($('#tahun_akhir').val(), 10);
+            const valid = Number.isNaN(tahunAwal) || Number.isNaN(tahunAkhir)
+                || (tahunAkhir - tahunAwal === 4 && tahunAwal % 5 === 0);
+            $('#tahun_akhir')[0].setCustomValidity(valid ? '' : 'Periode harus mengikuti blok 5 tahunan, contoh 2025 - 2029.');
+        }
+
+        $('#tahun_awal, #tahun_akhir').on('input', validatePeriodRange);
 
         $('#formModal').on('hidden.bs.modal', function () {
             $('#formData')[0].reset();

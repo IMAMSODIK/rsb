@@ -10,6 +10,11 @@ use App\Http\Controllers\SasaranProgramController;
 use App\Http\Controllers\SasaranStrategisController;
 use App\Http\Controllers\SliderItemController;
 use App\Http\Controllers\TujuanRsbController;
+use App\Http\Controllers\TargetKinerjaLayananController;
+use App\Http\Controllers\TargetKinerjaIkuRsbController;
+use App\Http\Controllers\RealisasiKinerjaLayananController;
+use App\Http\Controllers\RealisasiKinerjaIkuRsbController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UnitKerjaController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -23,7 +28,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     // Master Data
-    Route::prefix('master')->name('master.')->group(function () {
+    Route::middleware('admin')->prefix('master')->name('master.')->group(function () {
         Route::resource('unit-kerja', UnitKerjaController::class)->except(['create', 'edit', 'show']);
         Route::resource('users', UserController::class)->except(['create', 'edit', 'show']);
         Route::resource('jenis-layanan', JenisLayananController::class)->except(['create', 'edit', 'show']);
@@ -34,6 +39,56 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('sasaran-strategis', SasaranStrategisController::class)->except(['create', 'edit', 'show']);
         Route::resource('periode-rsb', PeriodeRsbController::class)->except(['create', 'edit', 'show']);
         Route::resource('settings', SliderItemController::class)->except(['create', 'edit', 'show']);
+    });
+
+    // Monitoring
+    Route::prefix('monitoring')->name('monitoring.')->group(function () {
+        Route::get('target-kinerja-layanan', [TargetKinerjaLayananController::class, 'index'])
+            ->name('target-kinerja-layanan');
+        Route::get('target-kinerja-layanan/data', [TargetKinerjaLayananController::class, 'data'])
+            ->name('target-kinerja-layanan.data');
+        Route::post('target-kinerja-layanan/draft', [TargetKinerjaLayananController::class, 'saveDraft'])
+            ->name('target-kinerja-layanan.draft');
+        Route::get('realisasi-kinerja-layanan', [RealisasiKinerjaLayananController::class, 'index'])
+            ->name('realisasi-kinerja-layanan');
+        Route::get('realisasi-kinerja-layanan/data', [RealisasiKinerjaLayananController::class, 'data'])
+            ->name('realisasi-kinerja-layanan.data');
+        Route::post('realisasi-kinerja-layanan/draft', [RealisasiKinerjaLayananController::class, 'saveDraft'])
+            ->name('realisasi-kinerja-layanan.draft');
+        Route::post('realisasi-kinerja-layanan/documents', [RealisasiKinerjaLayananController::class, 'uploadDocuments'])
+            ->name('realisasi-kinerja-layanan.documents.store');
+        Route::delete('realisasi-kinerja-layanan/documents/{document}', [RealisasiKinerjaLayananController::class, 'deleteDocument'])
+            ->name('realisasi-kinerja-layanan.documents.destroy');
+        Route::get('target-kinerja-iku-rsb', [TargetKinerjaIkuRsbController::class, 'index'])
+            ->name('target-kinerja-iku-rsb');
+        Route::get('target-kinerja-iku-rsb/data', [TargetKinerjaIkuRsbController::class, 'data'])
+            ->name('target-kinerja-iku-rsb.data');
+        Route::post('target-kinerja-iku-rsb/draft', [TargetKinerjaIkuRsbController::class, 'saveDraft'])
+            ->name('target-kinerja-iku-rsb.draft');
+        Route::get('realisasi-kinerja-iku-rsb', [RealisasiKinerjaIkuRsbController::class, 'index'])
+            ->name('realisasi-kinerja-iku-rsb');
+        Route::get('realisasi-kinerja-iku-rsb/data', [RealisasiKinerjaIkuRsbController::class, 'data'])
+            ->name('realisasi-kinerja-iku-rsb.data');
+        Route::post('realisasi-kinerja-iku-rsb/draft', [RealisasiKinerjaIkuRsbController::class, 'saveDraft'])
+            ->name('realisasi-kinerja-iku-rsb.draft');
+        Route::post('realisasi-kinerja-iku-rsb/documents', [RealisasiKinerjaIkuRsbController::class, 'uploadDocuments'])
+            ->name('realisasi-kinerja-iku-rsb.documents.store');
+        Route::delete('realisasi-kinerja-iku-rsb/documents/{document}', [RealisasiKinerjaIkuRsbController::class, 'deleteDocument'])
+            ->name('realisasi-kinerja-iku-rsb.documents.destroy');
+        Route::get('laporan-capaian-kinerja-layanan', [ReportController::class, 'layanan'])
+            ->name('laporan-capaian-kinerja-layanan');
+        Route::get('laporan-capaian-kinerja-layanan/data', [ReportController::class, 'dataLayanan'])
+            ->name('laporan-capaian-kinerja-layanan.data');
+        Route::get('laporan-capaian-kinerja-layanan/export/{format}', [ReportController::class, 'exportLayanan'])
+            ->whereIn('format', ['excel', 'pdf'])
+            ->name('laporan-capaian-kinerja-layanan.export');
+        Route::get('laporan-capaian-kinerja-iku', [ReportController::class, 'iku'])
+            ->name('laporan-capaian-kinerja-iku');
+        Route::get('laporan-capaian-kinerja-iku/data', [ReportController::class, 'dataIku'])
+            ->name('laporan-capaian-kinerja-iku.data');
+        Route::get('laporan-capaian-kinerja-iku/export/{format}', [ReportController::class, 'exportIku'])
+            ->whereIn('format', ['excel', 'pdf'])
+            ->name('laporan-capaian-kinerja-iku.export');
     });
 });
 

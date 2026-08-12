@@ -42,6 +42,13 @@ class PeriodeRsbController extends Controller
                 'tahun_akhir.gte'      => 'Tahun akhir harus lebih besar atau sama dengan tahun awal.',
             ]);
 
+            if ((int) $data['tahun_akhir'] - (int) $data['tahun_awal'] !== 4
+                || (int) $data['tahun_awal'] % 5 !== 0) {
+                throw ValidationException::withMessages([
+                    'tahun_akhir' => 'Periode harus mengikuti blok 5 tahunan, contoh 2025 - 2029.',
+                ]);
+            }
+
             $data['is_active'] = $request->boolean('is_active');
 
             DB::beginTransaction();
@@ -85,6 +92,13 @@ class PeriodeRsbController extends Controller
                 'tahun_akhir.required' => 'Tahun akhir wajib diisi.',
                 'tahun_akhir.gte'      => 'Tahun akhir harus lebih besar atau sama dengan tahun awal.',
             ]);
+
+            if ((int) $data['tahun_akhir'] - (int) $data['tahun_awal'] !== 4
+                || (int) $data['tahun_awal'] % 5 !== 0) {
+                throw ValidationException::withMessages([
+                    'tahun_akhir' => 'Periode harus mengikuti blok 5 tahunan, contoh 2025 - 2029.',
+                ]);
+            }
 
             $data['is_active'] = $request->boolean('is_active');
 

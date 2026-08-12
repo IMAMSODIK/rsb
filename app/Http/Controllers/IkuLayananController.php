@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\IkuKinerjaLayanan;
 use App\Models\SasaranStrategis;
+use App\Models\UnitKerja;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,11 +17,12 @@ class IkuLayananController extends Controller
     {
         try {
             if ($request->ajax()) {
-                $data = IkuKinerjaLayanan::with('sasaranStrategis')->orderBy('kode_iku')->get();
+                $data = IkuKinerjaLayanan::with(['sasaranStrategis', 'unitKerja'])->orderBy('kode_iku')->get();
                 return response()->json(['data' => $data]);
             }
             $sasaranStrategis = SasaranStrategis::orderBy('kode_sasaran_strategis')->get();
-            return view('master.iku-layanan.index', compact('sasaranStrategis'));
+            $unitKerja = UnitKerja::orderBy('kode_unit')->get();
+            return view('master.iku-layanan.index', compact('sasaranStrategis', 'unitKerja'));
         } catch (Exception $e) {
             Log::error('IkuLayanan index error: ' . $e->getMessage());
             if ($request->ajax()) {
@@ -35,11 +37,14 @@ class IkuLayananController extends Controller
         try {
             $data = $request->validate([
                 'sasaran_strategis_id' => 'required|exists:sasaran_strategis,id',
+                'unit_kerja_id'       => 'required|exists:unit_kerja,id',
                 'kode_iku'            => 'required|string|max:49|regex:/^[^.]+$/',
                 'uraian'              => 'required|string',
             ], [
                 'sasaran_strategis_id.required' => 'Sasaran strategis wajib dipilih.',
                 'sasaran_strategis_id.exists'   => 'Sasaran strategis tidak valid.',
+                'unit_kerja_id.required'        => 'Unit kerja wajib dipilih.',
+                'unit_kerja_id.exists'          => 'Unit kerja tidak valid.',
                 'kode_iku.required'             => 'Kode IKU wajib diisi.',
                 'kode_iku.regex'                => 'Kode tambahan tidak boleh mengandung titik.',
                 'uraian.required'               => 'Uraian wajib diisi.',
@@ -86,11 +91,14 @@ class IkuLayananController extends Controller
 
             $data = $request->validate([
                 'sasaran_strategis_id' => 'required|exists:sasaran_strategis,id',
+                'unit_kerja_id'       => 'required|exists:unit_kerja,id',
                 'kode_iku'            => 'required|string|max:49|regex:/^[^.]+$/',
                 'uraian'              => 'required|string',
             ], [
                 'sasaran_strategis_id.required' => 'Sasaran strategis wajib dipilih.',
                 'sasaran_strategis_id.exists'   => 'Sasaran strategis tidak valid.',
+                'unit_kerja_id.required'        => 'Unit kerja wajib dipilih.',
+                'unit_kerja_id.exists'          => 'Unit kerja tidak valid.',
                 'kode_iku.required'             => 'Kode IKU wajib diisi.',
                 'kode_iku.regex'                => 'Kode tambahan tidak boleh mengandung titik.',
                 'uraian.required'               => 'Uraian wajib diisi.',
