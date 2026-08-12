@@ -33,12 +33,13 @@
         }
 
         #realisasiTable .realization-input {
-            text-align: right;
+            text-align: left;
         }
 
         #realisasiTable td.target-cell {
             white-space: nowrap;
         }
+
     </style>
 
     <div class="app-hero-header d-flex align-items-center">
@@ -76,8 +77,10 @@
                         <table class="table table-bordered table-hover align-middle" id="realisasiTable">
                             <thead>
                                 <tr id="headerTop">
-                                    <th rowspan="2" width="50">No</th>
-                                    <th rowspan="2">Kode Kategori</th>
+                                     <th rowspan="2" width="50">No</th>
+                                     <th rowspan="2">Unit Kerja</th>
+                                     <th rowspan="2">Jenis Kinerja Layanan</th>
+                                     <th rowspan="2">Kode Kategori</th>
                                     <th rowspan="2">Uraian</th>
                                 </tr>
                                 <tr id="headerBottom"></tr>
@@ -107,6 +110,28 @@
             $('#tableWrapper').addClass('d-none');
         }
 
+        function destroyDataTable() {
+            if ($.fn.DataTable.isDataTable('#realisasiTable')) {
+                $('#realisasiTable').DataTable().destroy();
+            }
+        }
+
+        function initDataTable() {
+            $('#realisasiTable').DataTable({
+                order: [],
+                scrollX: true,
+                language: {
+                    search: 'Cari:',
+                    lengthMenu: 'Tampilkan _MENU_ data',
+                    info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',
+                    infoEmpty: 'Tidak ada data',
+                    zeroRecords: 'Data tidak ditemukan',
+                    emptyTable: 'Belum ada data realisasi kinerja layanan',
+                    paginate: { previous: 'Sebelumnya', next: 'Berikutnya' },
+                },
+            });
+        }
+
         function renderDocuments($container, documents) {
             $container.empty();
             if (!documents || !documents.length) {
@@ -125,14 +150,19 @@
         }
 
         function calculatePercentage($row, year) {
-            const target = parseFloat($row.find(`[data-target-year="${year}"]`).data('target')) || 0;
-            const semester1 = parseFloat($row.find(`[data-year="${year}"][data-semester="1"]`).val()) || 0;
-            const semester2 = parseFloat($row.find(`[data-year="${year}"][data-semester="2"]`).val()) || 0;
-            const percentage = target > 0 ? ((semester1 + semester2) / target) * 100 : null;
+             const target = parseFloat($row.find(`[data-target-year="${year}"]`).data('target'));
+             const semester1Value = $row.find(`[data-year="${year}"][data-semester="1"]`).val().trim();
+             const semester2Value = $row.find(`[data-year="${year}"][data-semester="2"]`).val().trim();
+             const semester1 = semester1Value === '' ? 0 : parseFloat(semester1Value);
+             const semester2 = semester2Value === '' ? 0 : parseFloat(semester2Value);
+             const percentage = Number.isFinite(target) && Number.isFinite(semester1) && Number.isFinite(semester2) && target > 0
+                 ? ((semester1 + semester2) / target) * 100
+                 : null;
             $row.find(`[data-percentage-year="${year}"]`).text(percentage === null ? '-' : `${percentage.toFixed(2)}%`);
         }
 
         function renderTable(response) {
+            destroyDataTable();
             responseYears = response.years;
             $('#unitInfo').removeClass('d-none').text(
                 `Unit kerja: ${response.unit_kerja.kode_unit} - ${response.unit_kerja.nama_unit} | Persentase dihitung dari target tahunan`
@@ -140,9 +170,11 @@
             $('#tableMessage').addClass('d-none');
             $('#tableWrapper').removeClass('d-none');
 
-            const $top = $('#headerTop').empty();
-            $('<th>', { rowspan: 2, width: 50, text: 'No' }).appendTo($top);
-            $('<th>', { rowspan: 2, text: 'Kode Kategori' }).appendTo($top);
+             const $top = $('#headerTop').empty();
+             $('<th>', { rowspan: 2, width: 50, text: 'No' }).appendTo($top);
+             $('<th>', { rowspan: 2, text: 'Unit Kerja' }).appendTo($top);
+             $('<th>', { rowspan: 2, text: 'Jenis Kinerja Layanan' }).appendTo($top);
+             $('<th>', { rowspan: 2, text: 'Kode Kategori' }).appendTo($top);
             $('<th>', { rowspan: 2, text: 'Uraian' }).appendTo($top);
             response.years.forEach(year => $('<th>', { colspan: 8, class: 'text-center', text: year }).appendTo($top));
             $('<th>', { rowspan: 2, width: 100, text: 'Status' }).appendTo($top);
@@ -166,9 +198,11 @@
             }
 
             response.data.forEach((item, index) => {
-                const $row = $('<tr>').attr({ 'data-target-id': item.id });
-                $('<td>', { text: index + 1 }).appendTo($row);
-                $('<td>', { text: item.kode_kategori }).appendTo($row);
+                 const $row = $('<tr>').attr({ 'data-target-id': item.id });
+                 $('<td>', { text: index + 1 }).appendTo($row);
+                 $('<td>', { text: item.unit_kerja || '-' }).appendTo($row);
+                 $('<td>', { text: item.jenis_kinerja_layanan || '-' }).appendTo($row);
+                 $('<td>', { text: item.kode_kategori }).appendTo($row);
                 $('<td>', { text: item.uraian, class: 'uraian-cell' }).appendTo($row);
                 response.years.forEach(year => {
                     const target = item.target_tahunan?.[year] ?? '';
@@ -182,7 +216,7 @@
                     })).appendTo($row);
                     [[1, semester1], [2, semester2]].forEach(([semester, value]) => {
                         $('<td>', { class: 'numeric-cell' }).append($('<input>', {
-                            type: 'number', min: 0, step: 'any', class: 'form-control form-control-sm realization-input',
+                             type: 'text', class: 'form-control form-control-sm realization-input',
                             'data-year': year, 'data-semester': semester, value: value.nilai ?? '',
                         })).appendTo($row);
                         $('<td>', { class: 'keterangan-cell' }).append($('<textarea>', {
@@ -208,9 +242,10 @@
                     class: 'save-status text-muted small',
                     text: item.status === 'draft' && Object.keys(item.realisasi_tahunan || {}).length ? 'Draft tersimpan' : 'Belum disimpan',
                 })).appendTo($row);
-                $body.append($row);
-            });
-        }
+                 $body.append($row);
+             });
+             initDataTable();
+         }
 
         function loadData(periodeId) {
             if (!periodeId) {

@@ -1,3 +1,23 @@
+@php
+    $shortcuts = [
+        ['label' => 'Dashboard', 'icon' => 'bi-speedometer2', 'route' => 'dashboard'],
+        ['label' => 'Target Layanan', 'icon' => 'bi-bullseye', 'route' => 'monitoring.target-kinerja-layanan'],
+        ['label' => 'Realisasi Layanan', 'icon' => 'bi-graph-up-arrow', 'route' => 'monitoring.realisasi-kinerja-layanan'],
+        ['label' => 'Target IKU RSB', 'icon' => 'bi-bar-chart-line', 'route' => 'monitoring.target-kinerja-iku-rsb'],
+        ['label' => 'Realisasi IKU RSB', 'icon' => 'bi-clipboard-data', 'route' => 'monitoring.realisasi-kinerja-iku-rsb'],
+        ['label' => 'Report Layanan', 'icon' => 'bi-file-earmark-bar-graph', 'route' => 'monitoring.laporan-capaian-kinerja-layanan'],
+        ['label' => 'Report IKU', 'icon' => 'bi-file-earmark-spreadsheet', 'route' => 'monitoring.laporan-capaian-kinerja-iku'],
+    ];
+
+    if (auth()->user()?->role === 'admin') {
+        $shortcuts = array_merge($shortcuts, [
+            ['label' => 'Manajemen User', 'icon' => 'bi-people', 'route' => 'master.users.index'],
+            ['label' => 'Unit Kerja', 'icon' => 'bi-building', 'route' => 'master.unit-kerja.index'],
+            ['label' => 'Periode RSB', 'icon' => 'bi-calendar3', 'route' => 'master.periode-rsb.index'],
+        ]);
+    }
+@endphp
+
 <div class="app-header d-flex align-items-center">
     <div class="d-flex">
         <button class="toggle-sidebar" id="toggle-sidebar">
@@ -32,28 +52,18 @@
                     data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-grid fs-4 lh-1 text-secondary"></i>
                 </a>
-                <div class="dropdown-menu dropdown-menu-end shadow-lg">
-                    <div class="d-flex gap-2 m-2">
-                        <a href="javascript:void(0)" class="g-col-4 p-2 border rounded-2">
-                            <img src="{{ asset('dashboard_assets/images/brand-behance.svg') }}" class="img-3x"
-                                alt="Admin Themes" />
-                        </a>
-                        <a href="javascript:void(0)" class="g-col-4 p-2 border rounded-2">
-                            <img src="{{ asset('dashboard_assets/images/brand-gatsby.svg') }}" class="img-3x"
-                                alt="Admin Themes" />
-                        </a>
-                        <a href="javascript:void(0)" class="g-col-4 p-2 border rounded-2">
-                            <img src="{{ asset('dashboard_assets/images/brand-google.svg') }}" class="img-3x"
-                                alt="Admin Themes" />
-                        </a>
-                        <a href="javascript:void(0)" class="g-col-4 p-2 border rounded-2">
-                            <img src="{{ asset('dashboard_assets/images/brand-bitcoin.svg') }}" class="img-3x"
-                                alt="Admin Themes" />
-                        </a>
-                        <a href="javascript:void(0)" class="g-col-4 p-2 border rounded-2">
-                            <img src="{{ asset('dashboard_assets/images/brand-dribbble.svg') }}" class="img-3x"
-                                alt="Admin Themes" />
-                        </a>
+                <div class="dropdown-menu dropdown-menu-end shadow-lg p-2" style="min-width: 360px;">
+                    <h6 class="dropdown-header">Shortcut Aplikasi</h6>
+                    <div class="row g-2">
+                        @foreach ($shortcuts as $shortcut)
+                            <div class="col-4">
+                                <a href="{{ route($shortcut['route']) }}"
+                                    class="dropdown-item rounded-2 text-center p-2 h-100">
+                                    <i class="bi {{ $shortcut['icon'] }} d-block fs-4 text-primary mb-1"></i>
+                                    <span class="small text-wrap">{{ $shortcut['label'] }}</span>
+                                </a>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
             </div>
@@ -65,7 +75,7 @@
                 </a>
                 <div class="dropdown-menu dropdown-menu-end shadow-lg">
                     <h5 class="fw-semibold px-3 py-2 text-primary">Notifications</h5>
-                    <div class="dropdown-item">
+                    {{-- <div class="dropdown-item">
                         <div class="d-flex py-2 border-bottom">
                             <div class="icon-box md bg-success rounded-circle me-3">
                                 <span class="fw-bold text-white">DS</span>
@@ -106,7 +116,7 @@
                                 <p class="small m-0 text-secondary">Today, 09:30pm</p>
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
                     <div class="d-grid mx-3 my-1">
                         <a href="javascript:void(0)" class="btn btn-primary">View all</a>
                     </div>
@@ -116,14 +126,16 @@
         <div class="dropdown ms-2">
             <a id="userSettings" class="dropdown-toggle d-flex py-2 align-items-center text-decoration-none"
                 href="#!" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <img src="{{ asset('dashboard_assets/images/user.png') }}" class="rounded-2 img-3x"
+                <img src="{{ Auth::user()->avatar_url }}" class="rounded-2 img-3x"
                     alt="{{ config('app.name') }}" />
                 <span class="ms-2 text-truncate d-lg-block d-none">{{ Auth::user()->name ?? 'Guest' }}</span>
             </a>
             <div class="dropdown-menu dropdown-menu-end shadow-lg">
                 <div class="header-action-links mx-3 gap-2">
-                    <a class="dropdown-item" href="#!"><i class="bi bi-person text-primary"></i>Profile</a>
-                    <a class="dropdown-item" href="#!"><i class="bi bi-gear text-danger"></i>Settings</a>
+                    <a class="dropdown-item" href="{{ route('profile.edit') }}"><i class="bi bi-person text-primary"></i>Profile</a>
+                    @if (auth()->user()?->role === 'admin')
+                        <a class="dropdown-item" href="{{ route('master.settings.index') }}"><i class="bi bi-gear text-danger"></i>Settings</a>
+                    @endif
                 </div>
                 <div class="mx-3 mt-2 d-grid">
                     <form method="POST" action="{{ route('logout') }}">

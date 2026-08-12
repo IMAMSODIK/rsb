@@ -37,11 +37,17 @@ class RealisasiKinerjaLayananController extends Controller
 
             $periode = PeriodeRsb::findOrFail($data['periode_id']);
             $years = range((int) $periode->tahun_awal, (int) $periode->tahun_akhir);
-            $targets = TargetKinerjaLayanan::with('kategori')
+            $targets = TargetKinerjaLayanan::with(['kategori.layanan', 'kategori.unitKerja', 'unitKerja'])
                 ->where('periode_rsb_id', $periode->id)
                 ->when(!$isAdmin, fn ($query) => $query->where('unit_kerja_id', $unitKerja->id))
-                ->orderBy('kategori_id')
-                ->get();
+                ->get()
+                ->sortBy(fn ($target) => sprintf(
+                    '%s|%s|%s|%s',
+                    $target->unitKerja?->kode_unit ?? '',
+                    $target->kategori?->layanan?->kode_layanan ?? '',
+                    $target->kategori?->kode_kategori ?? '',
+                    $target->kategori?->uraian ?? ''
+                ));
             $realisasi = RealisasiKinerjaLayanan::with('dokumen')
                 ->whereIn('target_kinerja_layanan_id', $targets->pluck('id'))
                 ->get()
@@ -58,7 +64,9 @@ class RealisasiKinerjaLayananController extends Controller
                     return [
                         'id' => $target->id,
                         'kode_kategori' => $target->kategori->kode_kategori,
-                        'uraian' => $target->kategori->uraian,
+                        'uraian' => $target->kategori->uraian_tanpa_unit,
+                        'unit_kerja' => $target->unitKerja ? $target->unitKerja->kode_unit.' - '.$target->unitKerja->nama_unit : '-',
+                        'jenis_kinerja_layanan' => $target->kategori->layanan ? $target->kategori->layanan->kode_layanan.' - '.$target->kategori->layanan->uraian : '-',
                         'target_tahunan' => $target->target_tahunan ?? [],
                         'realisasi_tahunan' => $item?->realisasi_tahunan ?? [],
                         'keterangan' => $item?->keterangan ?? '',
@@ -113,11 +121,10 @@ class RealisasiKinerjaLayananController extends Controller
                 $value = $data['realisasi_tahunan'][(string) $year] ?? $data['realisasi_tahunan'][$year] ?? [];
                 $semester1Data = is_array($value['semester_1'] ?? null) ? $value['semester_1'] : ['nilai' => ($value['semester_1'] ?? null)];
                 $semester2Data = is_array($value['semester_2'] ?? null) ? $value['semester_2'] : ['nilai' => ($value['semester_2'] ?? null)];
-                $semester1 = $this->numericValue($semester1Data['nilai'] ?? null);
-                $semester2 = $this->numericValue($semester2Data['nilai'] ?? null);
-                $targetValue = $this->numericValue($targets[(string) $year] ?? $targets[$year] ?? null);
-                $total = ($semester1 ?? 0) + ($semester2 ?? 0);
-                $percentage = $targetValue !== null && $targetValue > 0 ? round(($total / $targetValue) * 100, 2) : null;
+                $semester1 = $this->performanceValue($semester1Data['nilai'] ?? null);
+                $semester2 = $this->performanceValue($semester2Data['nilai'] ?? null);
+                $targetValue = $targets[(string) $year] ?? $targets[$year] ?? null;
+                $percentage = $this->percentage($targetValue, $semester1, $semester2);
 
                 $values[(string) $year] = [
                     'semester_1' => [
@@ -234,18 +241,37 @@ class RealisasiKinerjaLayananController extends Controller
         return UnitKerja::where('operator_id', auth()->id())->first();
     }
 
-    private function numericValue($value): ?float
+    private function performanceValue($value): float|string|null
     {
         if ($value === null || $value === '') {
             return null;
         }
-        if (!is_numeric($value) || $value < 0) {
+        if (is_array($value)) {
             throw ValidationException::withMessages([
-                'realisasi_tahunan' => 'Realisasi semester harus berupa angka nol atau lebih.',
+                'realisasi_tahunan' => 'Realisasi semester harus berupa angka atau teks.',
             ]);
         }
+        if (is_numeric($value)) {
+            if ($value < 0) {
+                throw ValidationException::withMessages([
+                    'realisasi_tahunan' => 'Realisasi numerik tidak boleh kurang dari nol.',
+                ]);
+            }
 
-        return (float) $value;
+            return (float) $value;
+        }
+
+        $value = trim((string) $value);
+        return $value === '' ? null : $value;
+    }
+
+    private function percentage($target, $semester1, $semester2): ?float
+    {
+        if (!is_numeric($target) || ($semester1 !== null && !is_numeric($semester1)) || ($semester2 !== null && !is_numeric($semester2)) || (float) $target <= 0) {
+            return null;
+        }
+
+        return round((((float) ($semester1 ?? 0) + (float) ($semester2 ?? 0)) / (float) $target) * 100, 2);
     }
 
     private function textValue($value): ?string

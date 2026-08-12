@@ -38,12 +38,12 @@ class ReportController extends Controller
 
     public function exportLayanan(Request $request, string $format)
     {
-        return $this->export($request, 'layanan', $format);
+        return $this->export($request, 'layanan');
     }
 
     public function exportIku(Request $request, string $format)
     {
-        return $this->export($request, 'iku', $format);
+        return $this->export($request, 'iku');
     }
 
     private function reportView(string $type)
@@ -94,25 +94,38 @@ class ReportController extends Controller
 
     private function serviceRows(PeriodeRsb $periode, ?UnitKerja $unitKerja, string $mode, array $years): array
     {
-        $targets = TargetKinerjaLayanan::with('kategori')
-            ->where('periode_rsb_id', $periode->id)->when($unitKerja, fn ($query) => $query->where('unit_kerja_id', $unitKerja->id))->get();
+        $targets = TargetKinerjaLayanan::with(['kategori.layanan', 'kategori.unitKerja', 'unitKerja'])
+            ->where('periode_rsb_id', $periode->id)->when($unitKerja, fn ($query) => $query->where('unit_kerja_id', $unitKerja->id))->get()
+            ->sortBy(fn ($target) => sprintf(
+                '%s|%s|%s|%s',
+                $target->unitKerja?->kode_unit ?? '',
+                $target->kategori?->layanan?->kode_layanan ?? '',
+                $target->kategori?->kode_kategori ?? '',
+                $target->kategori?->uraian ?? ''
+            ));
         $realisasi = RealisasiKinerjaLayanan::with('dokumen')->whereIn('target_kinerja_layanan_id', $targets->pluck('id'))
             ->get()->keyBy('target_kinerja_layanan_id');
 
-        return $targets->map(fn ($target) => $this->rowData(
-            $target->kategori->kode_kategori,
-            $target->kategori->uraian,
-            $target->target_tahunan ?? [],
-            $realisasi->get($target->id)?->realisasi_tahunan ?? [],
-            $mode,
-            $years,
-            $realisasi->get($target->id)?->dokumen
-        ))->values()->all();
+        return $targets->map(function ($target) use ($realisasi, $mode, $years) {
+            $row = $this->rowData(
+                $target->kategori->kode_kategori,
+                $target->kategori->uraian_tanpa_unit,
+                $target->target_tahunan ?? [],
+                $realisasi->get($target->id)?->realisasi_tahunan ?? [],
+                $mode,
+                $years,
+                $realisasi->get($target->id)?->dokumen
+            );
+            $row['unit_kerja'] = $target->unitKerja ? $target->unitKerja->kode_unit.' - '.$target->unitKerja->nama_unit : '-';
+            $row['jenis_kinerja_layanan'] = $target->kategori->layanan ? $target->kategori->layanan->kode_layanan.' - '.$target->kategori->layanan->uraian : '-';
+
+            return $row;
+        })->values()->all();
     }
 
     private function ikuRows(PeriodeRsb $periode, ?UnitKerja $unitKerja, string $mode, array $years): array
     {
-        $targets = TargetKinerjaIkuRsb::with('iku.sasaranStrategis')
+        $targets = TargetKinerjaIkuRsb::with(['iku.sasaranStrategis.sasaranProgram.tujuan', 'iku.unitKerja'])
             ->where('periode_rsb_id', $periode->id)->when($unitKerja, fn ($query) => $query->where('unit_kerja_id', $unitKerja->id))->get();
         $realisasi = RealisasiKinerjaIkuRsb::with('dokumen')->whereIn('target_kinerja_iku_rsb_id', $targets->pluck('id'))
             ->get()->keyBy('target_kinerja_iku_rsb_id');
@@ -120,14 +133,19 @@ class ReportController extends Controller
         return $targets->map(function ($target) use ($realisasi, $mode, $years) {
             $row = $this->rowData(
                 $target->iku->kode_iku,
-                $target->iku->uraian,
+                $target->iku->uraian_tanpa_unit,
                 $target->target_tahunan ?? [],
                 $realisasi->get($target->id)?->realisasi_tahunan ?? [],
                 $mode,
                 $years,
                 $realisasi->get($target->id)?->dokumen
             );
-            $row['sasaran_strategis'] = $target->iku->sasaranStrategis?->kode_sasaran_strategis ?? '-';
+            $sasaranStrategis = $target->iku->sasaranStrategis;
+            $sasaranProgram = $sasaranStrategis?->sasaranProgram;
+            $tujuan = $sasaranProgram?->tujuan;
+            $row['tujuan_rsb'] = $tujuan ? $tujuan->kode_tujuan.' - '.$tujuan->uraian : '-';
+            $row['sasaran_program'] = $sasaranProgram ? $sasaranProgram->kode_sasaran_program.' - '.$sasaranProgram->uraian : '-';
+            $row['sasaran_strategis'] = $sasaranStrategis ? $sasaranStrategis->kode_sasaran_strategis.' - '.$sasaranStrategis->uraian : '-';
             return $row;
         })->values()->all();
     }
@@ -139,18 +157,17 @@ class ReportController extends Controller
         $details = [];
         $documentGroups = $documents?->groupBy(fn ($doc) => $doc->tahun.'_'.$doc->semester) ?? collect();
         foreach ($years as $year) {
-            $target = $this->number($targets[(string) $year] ?? $targets[$year] ?? null);
+            $target = $this->value($targets[(string) $year] ?? $targets[$year] ?? null);
             $value = $realisasi[(string) $year] ?? $realisasi[$year] ?? [];
-            $semester1 = $this->number(is_array($value['semester_1'] ?? null) ? ($value['semester_1']['nilai'] ?? null) : ($value['semester_1'] ?? null));
-            $semester2 = $this->number(is_array($value['semester_2'] ?? null) ? ($value['semester_2']['nilai'] ?? null) : ($value['semester_2'] ?? null));
-            $targetTotal += $target ?? 0;
-            $realizationTotal += $mode === 'semester_1' ? ($semester1 ?? 0) : ($mode === 'semester_2' ? ($semester2 ?? 0) : (($semester1 ?? 0) + ($semester2 ?? 0)));
-            $selectedValue = $mode === 'semester_1' ? $semester1 : ($mode === 'semester_2' ? $semester2 : (($semester1 ?? 0) + ($semester2 ?? 0)));
+            $semester1 = $this->value(is_array($value['semester_1'] ?? null) ? ($value['semester_1']['nilai'] ?? null) : ($value['semester_1'] ?? null));
+            $semester2 = $this->value(is_array($value['semester_2'] ?? null) ? ($value['semester_2']['nilai'] ?? null) : ($value['semester_2'] ?? null));
+            $targetTotal += $this->number($target) ?? 0;
+            $realizationTotal += $this->selectedNumber($semester1, $semester2, $mode);
             $details[(string) $year] = [
                 'target' => $target,
                 'semester_1' => ['nilai' => $semester1, 'keterangan' => is_array($value['semester_1'] ?? null) ? ($value['semester_1']['keterangan'] ?? null) : null],
                 'semester_2' => ['nilai' => $semester2, 'keterangan' => is_array($value['semester_2'] ?? null) ? ($value['semester_2']['keterangan'] ?? null) : null],
-                'persentase' => $target !== null && $target > 0 ? round(($selectedValue / $target) * 100, 2) : null,
+                'persentase' => $this->percentage($target, $semester1, $semester2, $mode),
                 'dokumen' => $documentGroups->mapWithKeys(function ($items, $key) {
                     return [$key => $items->map(fn ($doc) => ['nama_asli' => $doc->nama_asli, 'url' => Storage::disk('public')->url($doc->path)])->values()->all()];
                 })->all(),
@@ -168,22 +185,21 @@ class ReportController extends Controller
         ];
     }
 
-    private function export(Request $request, string $type, string $format)
+    private function export(Request $request, string $type)
     {
         $report = $this->buildReport($request, $type);
         if (!($report['success'] ?? false)) {
             return response($report['message'] ?? 'Gagal membuat laporan.', 422);
         }
         $title = $type === 'layanan' ? 'Laporan Capaian Kinerja Layanan' : 'Laporan Capaian Kinerja IKU';
-        if ($format === 'pdf') {
-            return response()->view('reports.print', compact('report', 'title'));
-        }
 
         $filename = strtolower(str_replace(' ', '-', $title)).'-'.date('Ymd').'.csv';
         return response()->streamDownload(function () use ($report, $type) {
             $output = fopen('php://output', 'w');
             fprintf($output, "\xEF\xBB\xBF");
-            $headers = [$type === 'iku' ? 'Kode IKU' : 'Kode Kategori', 'Sasaran Strategis', 'Uraian', 'Tahun', 'Target'];
+            $headers = $type === 'iku'
+                ? ['Kode IKU', 'Tujuan RSB', 'Sasaran Program', 'Sasaran Strategis', 'Uraian', 'Tahun', 'Target']
+                : ['Kode Kategori', 'Unit Kerja', 'Jenis Kinerja Layanan', 'Uraian', 'Tahun', 'Target'];
             if ($report['mode'] !== 'semester_2') {
                 array_push($headers, 'Realisasi Semester 1', 'Keterangan Semester 1', 'Dokumen Semester 1');
             }
@@ -194,7 +210,9 @@ class ReportController extends Controller
             fputcsv($output, $headers);
             foreach ($report['rows'] as $row) {
                 foreach ($row['detail'] as $year => $detail) {
-                    $values = [$row['kode'], $row['sasaran_strategis'] ?? '-', $row['uraian'], $year, $detail['target'] ?? '-'];
+                    $values = $type === 'iku'
+                        ? [$row['kode'], $row['tujuan_rsb'] ?? '-', $row['sasaran_program'] ?? '-', $row['sasaran_strategis'] ?? '-', $row['uraian'], $year, $detail['target'] ?? '-']
+                        : [$row['kode'], $row['unit_kerja'] ?? '-', $row['jenis_kinerja_layanan'] ?? '-', $row['uraian'], $year, $detail['target'] ?? '-'];
                     if ($report['mode'] !== 'semester_2') {
                         array_push($values, $detail['semester_1']['nilai'] ?? '-', $detail['semester_1']['keterangan'] ?? '-', collect($detail['dokumen'][$year.'_1'] ?? [])->pluck('nama_asli')->implode(', '));
                     }
@@ -212,5 +230,37 @@ class ReportController extends Controller
     private function number($value): ?float
     {
         return is_numeric($value) ? (float) $value : null;
+    }
+
+    private function value($value): float|string|null
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $value = is_numeric($value) ? (float) $value : trim((string) $value);
+        return $value === '' ? null : $value;
+    }
+
+    private function selectedNumber($semester1, $semester2, string $mode): float
+    {
+        $semester1 = $this->number($semester1);
+        $semester2 = $this->number($semester2);
+
+        return $mode === 'semester_1'
+            ? ($semester1 ?? 0)
+            : ($mode === 'semester_2' ? ($semester2 ?? 0) : (($semester1 ?? 0) + ($semester2 ?? 0)));
+    }
+
+    private function percentage($target, $semester1, $semester2, string $mode): ?float
+    {
+        $target = $this->number($target);
+        $semester1 = $this->number($semester1);
+        $semester2 = $this->number($semester2);
+        if ($target === null || $target <= 0 || ($mode === 'semester_1' && $semester1 === null) || ($mode === 'semester_2' && $semester2 === null) || ($mode === 'tahunan' && $semester1 === null && $semester2 === null)) {
+            return null;
+        }
+
+        return round(($this->selectedNumber($semester1, $semester2, $mode) / $target) * 100, 2);
     }
 }

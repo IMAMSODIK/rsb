@@ -8,7 +8,7 @@
         #realisasiTable td.keterangan-cell { min-width: 240px; width: 240px; }
         #realisasiTable td.dokumen-cell { min-width: 260px; width: 260px; }
         #realisasiTable td.numeric-cell { text-align: right; white-space: nowrap; }
-        #realisasiTable .realization-input { text-align: right; }
+        #realisasiTable .realization-input { text-align: left; }
         #realisasiTable td.target-cell { white-space: nowrap; }
     </style>
 
@@ -36,7 +36,7 @@
             <div id="unitInfo" class="alert alert-info d-none"></div>
             <div id="tableMessage" class="text-secondary">Pilih periode untuk memuat realisasi IKU.</div>
             <div id="tableWrapper" class="table-responsive d-none"><table class="table table-bordered table-hover align-middle" id="realisasiTable">
-                <thead><tr id="headerTop"><th rowspan="2" width="50">No</th><th rowspan="2">Kode IKU</th><th rowspan="2">Sasaran Strategis</th><th rowspan="2">Uraian</th></tr><tr id="headerBottom"></tr></thead>
+                <thead><tr id="headerTop"><th rowspan="2" width="50">No</th><th rowspan="2">Kode IKU</th><th rowspan="2">Tujuan RSB</th><th rowspan="2">Sasaran Program</th><th rowspan="2">Sasaran Strategis</th><th rowspan="2">Uraian</th></tr><tr id="headerBottom"></tr></thead>
                 <tbody></tbody>
             </table></div>
         </div>
@@ -55,7 +55,21 @@
         let responseYears = [];
         const saveTimers = {};
 
-        function message(text) { $('#tableMessage').removeClass('d-none').text(text); $('#tableWrapper').addClass('d-none'); }
+         function message(text) { $('#tableMessage').removeClass('d-none').text(text); $('#tableWrapper').addClass('d-none'); }
+         function destroyDataTable() { if ($.fn.DataTable.isDataTable('#realisasiTable')) $('#realisasiTable').DataTable().destroy(); }
+         function initDataTable() {
+             $('#realisasiTable').DataTable({
+                 order: [],
+                 scrollX: true,
+                 language: {
+                     search: 'Cari:', lengthMenu: 'Tampilkan _MENU_ data',
+                     info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',
+                     infoEmpty: 'Tidak ada data', zeroRecords: 'Data tidak ditemukan',
+                     emptyTable: 'Belum ada data realisasi kinerja IKU RSB',
+                     paginate: { previous: 'Sebelumnya', next: 'Berikutnya' },
+                 },
+             });
+         }
         function docs($box, list) {
             $box.empty();
             if (!list || !list.length) return $('<span>', { class: 'text-muted small', text: 'Belum ada' }).appendTo($box);
@@ -67,20 +81,27 @@
             });
         }
         function percentage($row) {
-            const target = parseFloat($row.find('.target-value').data('target')) || 0;
-            const s1 = parseFloat($row.find('[data-semester="1"]').val()) || 0;
-            const s2 = parseFloat($row.find('[data-semester="2"]').val()) || 0;
-            const value = target > 0 ? ((s1 + s2) / target) * 100 : null;
+             const target = parseFloat($row.find('.target-value').data('target'));
+             const s1Value = $row.find('[data-semester="1"]').val().trim();
+             const s2Value = $row.find('[data-semester="2"]').val().trim();
+             const s1 = s1Value === '' ? 0 : parseFloat(s1Value);
+             const s2 = s2Value === '' ? 0 : parseFloat(s2Value);
+             const value = Number.isFinite(target) && Number.isFinite(s1) && Number.isFinite(s2) && target > 0
+                 ? ((s1 + s2) / target) * 100
+                 : null;
             $row.find('.percentage-value').text(value == null ? '-' : `${value.toFixed(2)}%`);
         }
-        function render(response) {
-            responseYears = response.years;
+         function render(response) {
+             destroyDataTable();
+             responseYears = response.years;
             $('#unitInfo').removeClass('d-none').text(`Unit kerja: ${response.unit_kerja.kode_unit} - ${response.unit_kerja.nama_unit} | Persentase dihitung dari target tahunan`);
             $('#tableMessage').addClass('d-none'); $('#tableWrapper').removeClass('d-none');
             const $top = $('#headerTop').empty();
-            $('<th>', { rowspan: 2, width: 50, text: 'No' }).appendTo($top);
-            $('<th>', { rowspan: 2, text: 'Kode IKU' }).appendTo($top);
-            $('<th>', { rowspan: 2, text: 'Sasaran Strategis' }).appendTo($top);
+             $('<th>', { rowspan: 2, width: 50, text: 'No' }).appendTo($top);
+             $('<th>', { rowspan: 2, text: 'Kode IKU' }).appendTo($top);
+             $('<th>', { rowspan: 2, text: 'Tujuan RSB' }).appendTo($top);
+             $('<th>', { rowspan: 2, text: 'Sasaran Program' }).appendTo($top);
+             $('<th>', { rowspan: 2, text: 'Sasaran Strategis' }).appendTo($top);
             $('<th>', { rowspan: 2, text: 'Uraian' }).appendTo($top);
             response.years.forEach(year => $('<th>', { colspan: 8, class: 'text-center', text: year }).appendTo($top));
             $('<th>', { rowspan: 2, width: 100, text: 'Status' }).appendTo($top);
@@ -90,22 +111,24 @@
             if (!response.data.length) return message('Belum ada target kinerja IKU untuk unit kerja dan periode ini.');
             response.data.forEach((item, index) => {
                 const $row = $('<tr>').attr({ 'data-target-id': item.id });
-                $('<td>', { text: index + 1 }).appendTo($row); $('<td>', { text: item.kode_iku }).appendTo($row);
-                $('<td>', { text: item.sasaran_strategis || '-' }).appendTo($row); $('<td>', { text: item.uraian, class: 'uraian-cell' }).appendTo($row);
+                 $('<td>', { text: index + 1 }).appendTo($row); $('<td>', { text: item.kode_iku }).appendTo($row);
+                 $('<td>', { text: item.tujuan_rsb || '-' }).appendTo($row); $('<td>', { text: item.sasaran_program || '-' }).appendTo($row);
+                 $('<td>', { text: item.sasaran_strategis || '-' }).appendTo($row); $('<td>', { text: item.uraian, class: 'uraian-cell' }).appendTo($row);
                 response.years.forEach(year => {
                     const target = item.target_tahunan?.[year] ?? ''; const annual = item.realisasi_tahunan?.[year] || {};
                     $('<td>', { class: 'target-cell' }).append($('<span>', { class: 'badge bg-light text-dark target-value', text: target === '' ? '-' : target, 'data-target-year': year, 'data-target': target })).appendTo($row);
                     [[1, annual.semester_1 || {}], [2, annual.semester_2 || {}]].forEach(([semester, value]) => {
-                        $('<td>', { class: 'numeric-cell' }).append($('<input>', { type: 'number', min: 0, step: 'any', class: 'form-control form-control-sm realization-input', 'data-year': year, 'data-semester': semester, value: value.nilai ?? '' })).appendTo($row);
+                         $('<td>', { class: 'numeric-cell' }).append($('<input>', { type: 'text', class: 'form-control form-control-sm realization-input', 'data-year': year, 'data-semester': semester, value: value.nilai ?? '' })).appendTo($row);
                         $('<td>', { class: 'keterangan-cell' }).append($('<textarea>', { class: 'form-control form-control-sm semester-note', rows: 2, 'data-year': year, 'data-semester': semester, text: value.keterangan || '' })).appendTo($row);
                         const $box = $('<div>', { class: 'document-list mb-2' }); docs($box, (item.dokumen || {})[`${year}_${semester}`] || []);
                         $('<td>', { class: 'dokumen-cell' }).append($box).append($('<input>', { type: 'file', multiple: true, class: 'form-control form-control-sm document-input', accept: '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png', 'data-year': year, 'data-semester': semester })).append($('<button>', { type: 'button', class: 'btn btn-sm btn-outline-primary mt-1 upload-documents', 'data-year': year, 'data-semester': semester, text: 'Upload' })).appendTo($row);
                     });
                     $('<td>', { class: 'text-nowrap numeric-cell' }).append($('<span>', { class: 'percentage-value', 'data-percentage-year': year, text: annual.persentase == null ? '-' : `${Number(annual.persentase).toFixed(2)}%` })).appendTo($row);
                 });
-                $('<td>').append($('<span>', { class: 'save-status text-muted small', text: item.status === 'draft' && Object.keys(item.realisasi_tahunan || {}).length ? 'Draft tersimpan' : 'Belum disimpan' })).appendTo($row); $body.append($row);
-            });
-        }
+                 $('<td>').append($('<span>', { class: 'save-status text-muted small', text: item.status === 'draft' && Object.keys(item.realisasi_tahunan || {}).length ? 'Draft tersimpan' : 'Belum disimpan' })).appendTo($row); $body.append($row);
+             });
+             initDataTable();
+         }
         function load(period) {
             if (!period) return message('Pilih periode untuk memuat realisasi IKU.');
             $('#tableMessage').removeClass('d-none').text('Memuat data...');

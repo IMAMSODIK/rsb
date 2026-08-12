@@ -1,339 +1,177 @@
 @extends('layouts.template')
 
 @section('content')
+    <style>
+        .dashboard-welcome {
+            background: linear-gradient(135deg, #173b67 0%, #286a8f 100%);
+            color: #fff;
+        }
+
+        .dashboard-stat .stat-icon {
+            width: 44px;
+            height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            font-size: 1.35rem;
+        }
+
+        .dashboard-stat .stat-value { font-size: 1.75rem; }
+        .dashboard-progress { height: 8px; }
+        .dashboard-table th { white-space: nowrap; }
+    </style>
+
     <div class="app-hero-header d-flex align-items-center">
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
                 <i class="bi bi-house lh-1 pe-3 me-3 border-end border-dark"></i>
-                <a href="/dashboard" class="text-decoration-none">Home</a>
+                <a href="{{ route('dashboard') }}" class="text-decoration-none">Home</a>
             </li>
-            <li class="breadcrumb-item text-secondary" aria-current="page">
-                Dashboard
-            </li>
+            <li class="breadcrumb-item text-secondary" aria-current="page">Dashboard</li>
         </ol>
-
-        {{-- <div class="ms-auto d-lg-flex d-none flex-row">
-							<div class="d-flex flex-row gap-2">
-								<button class="btn btn-sm btn-primary">Today</button>
-								<button class="btn btn-sm btn-white">7d</button>
-								<button class="btn btn-sm btn-white">2w</button>
-								<button class="btn btn-sm btn-white">1m</button>
-								<button class="btn btn-sm btn-white">3m</button>
-								<button class="btn btn-sm btn-white">6m</button>
-								<button class="btn btn-sm btn-white">1y</button>
-							</div>
-						</div> --}}
-
     </div>
 
     <div class="app-body">
-
-        <div class="row gx-3">
-            <div class="col-xl-3 col-sm-6 col-12">
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <div class="mb-2">
-                            <i class="bi bi-bar-chart fs-1 text-primary lh-1"></i>
-                        </div>
-                        <div class="d-flex align-items-center justify-content-between">
-                            <h5 class="m-0 text-secondary fw-normal">Sales</h5>
-                            <h3 class="m-0 text-primary">3500</h3>
-                        </div>
-                    </div>
+        <div class="card dashboard-welcome mb-3">
+            <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <p class="mb-1 opacity-75">{{ $isAdmin ? 'Dashboard Administrator' : 'Dashboard Operator' }}</p>
+                    <h3 class="mb-2">Selamat datang, {{ $user->name }}</h3>
+                    <p class="mb-0 opacity-75">
+                        {{ $isAdmin ? 'Pantau ringkasan kinerja seluruh unit kerja.' : 'Pantau pengisian kinerja unit kerja Anda.' }}
+                    </p>
                 </div>
-            </div>
-            <div class="col-xl-3 col-sm-6 col-12">
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <div class="mb-2">
-                            <i class="bi bi-bag-check fs-1 text-primary lh-1"></i>
-                        </div>
-                        <div class="d-flex align-items-center justify-content-between">
-                            <h5 class="m-0 text-secondary fw-normal">Orders</h5>
-                            <h3 class="m-0 text-primary">2900</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-sm-6 col-12">
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <div class="arrow-label">+18%</div>
-                        <div class="mb-2">
-                            <i class="bi bi-box-seam fs-1 text-primary lh-1"></i>
-                        </div>
-                        <div class="d-flex align-items-center justify-content-between">
-                            <h5 class="m-0 text-secondary fw-normal">Items</h5>
-                            <h3 class="m-0 text-primary">6500</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-sm-6 col-12">
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <div class="arrow-label">+24%</div>
-                        <div class="mb-2">
-                            <i class="bi bi-bell fs-1 text-primary lh-1"></i>
-                        </div>
-                        <div class="d-flex align-items-center justify-content-between">
-                            <h5 class="m-0 text-secondary fw-normal">Signups</h5>
-                            <h3 class="m-0 text-primary">7200</h3>
-                        </div>
-                    </div>
+                <div class="text-md-end">
+                    <small class="d-block opacity-75">Periode aktif</small>
+                    <strong>
+                        @if ($periodeAktif)
+                            {{ $periodeAktif->tahun_awal }} - {{ $periodeAktif->tahun_akhir }}
+                        @else
+                            Belum ditentukan
+                        @endif
+                    </strong>
                 </div>
             </div>
         </div>
 
+        @if (!$isAdmin && !$unit)
+            <div class="alert alert-warning">
+                Unit kerja untuk akun operator ini belum ditentukan oleh administrator.
+            </div>
+        @endif
+
         <div class="row gx-3">
-            <div class="col-xxl-12">
-                <div class="card mb-3">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="card-title">Overview</h5>
-                        <button class="btn btn-outline-primary btn-sm ms-auto">
-                            Download
-                        </button>
-                    </div>
-                    <div class="card-body">
-                        <div class="row gx-3">
-                            <div class="col-lg-5 col-sm-12 col-12">
-                                <h6 class="text-center mb-3">Visitors</h6>
-                                <div id="visitors"></div>
-                                <div class="my-3 text-center">
-                                    <div class="badge bg-danger bg-opacity-10 text-danger">
-                                        10% higher than last month
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-lg-2 col-sm-12 col-12">
-                                <div class="border px-2 py-4 rounded-5 h-100 text-center">
-                                    <h6 class="mt-3 mb-5">Monthly Average</h6>
-                                    <div class="mb-5">
-                                        <h2 class="text-primary">9600</h2>
-                                        <h6 class="text-secondary fw-light">Visitors</h6>
-                                    </div>
-                                    <div class="mb-4">
-                                        <h2 class="text-danger">$450<sup>k</sup></h2>
-                                        <h6 class="text-secondary fw-light">Sales</h6>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-lg-5 col-sm-12 col-12">
-                                <h6 class="text-center mb-3">Sales</h6>
-                                <div id="sales"></div>
-                                <div class="my-3 text-center">
-                                    <div class="badge bg-primary bg-opacity-10 text-primary">
-                                        12% higher than last month
-                                    </div>
-                                </div>
+            @foreach ($stats as $stat)
+                <div class="col-xl-3 col-sm-6 col-12">
+                    <div class="card dashboard-stat mb-3 h-100">
+                        <div class="card-body d-flex align-items-center gap-3">
+                            <span class="stat-icon bg-{{ $stat['color'] }} bg-opacity-10 text-{{ $stat['color'] }}">
+                                <i class="bi {{ $stat['icon'] }}"></i>
+                            </span>
+                            <div>
+                                <p class="text-secondary mb-1">{{ $stat['label'] }}</p>
+                                <h3 class="stat-value mb-0">{{ number_format($stat['value']) }}</h3>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            @endforeach
         </div>
 
         <div class="row gx-3">
-            <div class="col-xl-8 col-lg-12">
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <h5 class="card-title">Team Activity</h5>
-                    </div>
-                    <div class="card-body">
-                        <ul class="m-0 p-0">
-                            <li class="team-activity d-flex flex-wrap">
-                                <div class="activity-time py-2 me-3">
-                                    <p class="m-0">10:30AM</p>
-                                    <span class="badge bg-primary">New</span>
-                                </div>
-                                <div class="d-flex flex-column py-2">
-                                    <h6>Earth - Admin Dashboard</h6>
-                                    <p class="m-0 text-secondary">by Elnathan Lois</p>
-                                </div>
-                                <div class="ms-auto mt-4">
-                                    <div class="progress small mb-1">
-                                        <div class="progress-bar" role="progressbar" style="width: 25%" aria-valuenow="25"
-                                            aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                    <p class="text-secondary">(225 of 700gb)</p>
-                                </div>
-                            </li>
-                            <li class="team-activity d-flex flex-wrap">
-                                <div class="activity-time py-2 me-3">
-                                    <p class="m-0">11:30AM</p>
-                                    <span class="badge bg-primary">Task</span>
-                                </div>
-                                <div class="d-flex flex-column py-2">
-                                    <h6>Bootstrap Gallery Admin Templates</h6>
-                                    <p class="m-0 text-secondary">by Patrobus Nicole</p>
-                                </div>
-                                <div class="ms-auto mt-4">
-                                    <div class="progress small mb-1">
-                                        <div class="progress-bar" role="progressbar" style="width: 90%"
-                                            aria-valuenow="90" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                    <p class="text-secondary">90% completed</p>
-                                </div>
-                            </li>
-                            <li class="team-activity d-flex flex-wrap">
-                                <div class="activity-time py-2 me-3">
-                                    <p class="m-0">12:50PM</p>
-                                    <span class="badge bg-danger">Closed</span>
-                                </div>
-                                <div class="d-flex flex-column py-2">
-                                    <h6>Bootstrap Admin Themes</h6>
-                                    <p class="m-0 text-secondary">by Abilene Omega</p>
-                                </div>
-                                <div class="ms-auto mt-3">
-                                    <div id="sparkline1"></div>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-4 col-lg-12">
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <h5 class="card-title">Tasks</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="auto-align-graph">
-                            <div id="tasks"></div>
+            @foreach ($summary as $item)
+                <div class="col-xl-6 col-12">
+                    <div class="card mb-3 h-100">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">{{ $item['label'] }}</h5>
                         </div>
-                        <div class="grid text-center">
-                            <div class="g-col-4">
-                                <i class="bi bi-triangle text-warning"></i>
-                                <h3 class="m-0 mt-1">7</h3>
-                                <p class="text-secondary m-0">Ongoing</p>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Target terisi</span>
+                                    <strong>{{ $item['target']['filled'] }}/{{ $item['target']['total'] }} ({{ $item['target']['percentage'] }}%)</strong>
+                                </div>
+                                <div class="progress dashboard-progress">
+                                    <div class="progress-bar bg-primary" style="width: {{ $item['target']['percentage'] }}%"></div>
+                                </div>
                             </div>
-                            <div class="g-col-4">
-                                <i class="bi bi-triangle text-primary"></i>
-                                <h3 class="m-0 mt-1 fw-bolder">9</h3>
-                                <p class="text-secondary m-0">Pending</p>
-                            </div>
-                            <div class="g-col-4">
-                                <i class="bi bi-triangle text-danger"></i>
-                                <h3 class="m-0 mt-1">12</h3>
-                                <p class="text-secondary m-0">Completed</p>
+                            <div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Realisasi terisi</span>
+                                    <strong>{{ $item['realisasi']['filled'] }}/{{ $item['realisasi']['total'] }} ({{ $item['realisasi']['percentage'] }}%)</strong>
+                                </div>
+                                <div class="progress dashboard-progress">
+                                    <div class="progress-bar bg-success" style="width: {{ $item['realisasi']['percentage'] }}%"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            @endforeach
         </div>
 
-        <div class="row gx-3">
-            <div class="col-xl-4 col-sm-6">
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <h5 class="card-title">Events</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="bg-light px-3 py-2 d-flex justify-content-between align-items-center">
-                            <div id="todays-date" class="fw-semibold"></div>
-                            <div class="badge rounded-pill bg-primary fs-6">
-                                <span>21</span> Events
-                            </div>
-                        </div>
-                        <div class="event-list mt-3">
-                            <div class="d-flex align-items-center mb-4">
-                                <img src="{{ asset('dashboard_assets/images/checked.svg') }}" alt="Bootstrap Gallery"
-                                    class="img-2x" />
-                                <div class="ms-3">
-                                    <h6 class="text-primary mb-1 fw-bold">11:30AM</h6>
-                                    <h6 class="m-0 text-secondary fw-normal">
-                                        Product Launch
-                                    </h6>
-                                </div>
-                            </div>
-                            <div class="d-flex align-items-center mb-4">
-                                <img src="{{ asset('dashboard_assets/images/checked.svg') }}" alt="Bootstrap Gallery"
-                                    class="img-2x" />
-                                <div class="ms-3">
-                                    <h6 class="text-primary mb-1 fw-bold">2:30PM</h6>
-                                    <h6 class="m-0 text-secondary fw-normal">
-                                        Code review
-                                    </h6>
-                                </div>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <img src="{{ asset('dashboard_assets/images/not-checked.svg') }}" alt="Bootstrap Gallery"
-                                    class="img-2x" />
-                                <div class="ms-3">
-                                    <h6 class="text-primary mb-1 fw-bold">03:30PM</h6>
-                                    <h6 class="m-0 text-secondary fw-normal">
-                                        Product meeting with dev team
-                                    </h6>
-                                </div>
-                            </div>
-                        </div>
+        @if ($isAdmin)
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Ringkasan per Unit Kerja</h5>
+                    <span class="text-secondary small">Periode aktif</span>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="dashboardUnitTable" class="table table-hover align-middle dashboard-table w-100">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Unit Kerja</th>
+                                    <th>Operator</th>
+                                    <th>Kategori</th>
+                                    <th>IKU</th>
+                                    <th>Target Layanan</th>
+                                    <th>Realisasi Layanan</th>
+                                    <th>Target IKU</th>
+                                    <th>Realisasi IKU</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($unitSummary as $index => $row)
+                                    <tr>
+                                        <td>{{ $index + 1 }}</td>
+                                        <td>{{ $row['unit'] }}</td>
+                                        <td>{{ $row['operator'] }}</td>
+                                        <td>{{ $row['kategori'] }}</td>
+                                        <td>{{ $row['iku'] }}</td>
+                                        <td>{{ $row['target_layanan']['filled'] }}/{{ $row['target_layanan']['total'] }} ({{ $row['target_layanan']['percentage'] }}%)</td>
+                                        <td>{{ $row['realisasi_layanan']['filled'] }}/{{ $row['realisasi_layanan']['total'] }} ({{ $row['realisasi_layanan']['percentage'] }}%)</td>
+                                        <td>{{ $row['target_iku']['filled'] }}/{{ $row['target_iku']['total'] }} ({{ $row['target_iku']['percentage'] }}%)</td>
+                                        <td>{{ $row['realisasi_iku']['filled'] }}/{{ $row['realisasi_iku']['total'] }} ({{ $row['realisasi_iku']['percentage'] }}%)</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
-            <div class="col-xl-4 col-sm-6">
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <h5 class="card-title">Income</h5>
-                    </div>
-                    <div class="card-body p-0">
-                        <div id="income"></div>
-                        <div class="p-3 mt-n3">
-                            <div class="d-flex gap-3">
-                                <div class="">
-                                    <h4 class="fw-semibold mb-1">1600k</h4>
-                                    <p class="text-secondary m-0">
-                                        <span class="bi bi-record-fill text-primary me-1"></span>Overall Income
-                                    </p>
-                                </div>
-
-                                <div class="">
-                                    <h4 class="fw-semibold mb-1">1200k</h4>
-                                    <p class="text-secondary m-0">
-                                        <span class="bi bi-record-fill text-danger me-1"></span>Overall Expenses
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-4 col-sm-12">
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <h5 class="card-title">Activity</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="my-2 d-flex flex-column gap-3">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <h6 class="m-0 fw-normal">Server down</h6>
-                                <div class="badge bg-danger">High</div>
-                            </div>
-                            <div class="d-flex align-items-center justify-content-between">
-                                <h6 class="m-0 fw-normal">Notification from bank</h6>
-                                <div class="badge bg-primary">Low</div>
-                            </div>
-                            <div class="d-flex align-items-center justify-content-between">
-                                <h6 class="m-0 fw-normal">Transaction success alert</h6>
-                                <div class="badge bg-primary">Low</div>
-                            </div>
-                            <div class="d-flex align-items-center justify-content-between">
-                                <h6 class="m-0 fw-normal">Critical issue</h6>
-                                <div class="badge bg-danger">High</div>
-                            </div>
-                            <div class="d-flex align-items-center justify-content-between">
-                                <h6 class="m-0 fw-normal">Bug fix</h6>
-                                <div class="badge bg-danger">High</div>
-                            </div>
-                            <div class="d-flex align-items-center justify-content-between">
-                                <h6 class="m-0 fw-normal">OS update</h6>
-                                <div class="badge bg-primary">Low</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+        @endif
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    $(function () {
+        const language = {
+            search: 'Cari:',
+            lengthMenu: 'Tampilkan _MENU_ data',
+            info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',
+            infoEmpty: 'Tidak ada data',
+            zeroRecords: 'Data tidak ditemukan',
+            emptyTable: 'Belum ada data',
+            paginate: { previous: 'Sebelumnya', next: 'Berikutnya' },
+        };
+
+        @if ($isAdmin)
+            $('#dashboardUnitTable').DataTable({ order: [[1, 'asc']], language });
+        @endif
+    });
+</script>
+@endpush

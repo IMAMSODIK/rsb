@@ -38,6 +38,8 @@
                                 <tr id="targetHeaders">
                                     <th width="60">No</th>
                                     <th>Kode IKU</th>
+                                    <th>Tujuan RSB</th>
+                                    <th>Sasaran Program</th>
                                     <th>Sasaran Strategis</th>
                                     <th>Uraian</th>
                                 </tr>
@@ -66,7 +68,30 @@
             $('#targetTableWrapper').addClass('d-none');
         }
 
+        function destroyDataTable() {
+            if ($.fn.DataTable.isDataTable('#targetTable')) {
+                $('#targetTable').DataTable().destroy();
+            }
+        }
+
+        function initDataTable() {
+            $('#targetTable').DataTable({
+                order: [],
+                scrollX: true,
+                language: {
+                    search: 'Cari:',
+                    lengthMenu: 'Tampilkan _MENU_ data',
+                    info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',
+                    infoEmpty: 'Tidak ada data',
+                    zeroRecords: 'Data tidak ditemukan',
+                    emptyTable: 'Belum ada data target kinerja IKU RSB',
+                    paginate: { previous: 'Sebelumnya', next: 'Berikutnya' },
+                },
+            });
+        }
+
         function renderTable(response) {
+            destroyDataTable();
             years = response.years;
             $('#unitInfo').removeClass('d-none').text(
                 `Unit kerja: ${response.unit_kerja.kode_unit} - ${response.unit_kerja.nama_unit} | Status penyimpanan: Draft otomatis`
@@ -74,10 +99,12 @@
             $('#tableMessage').addClass('d-none');
             $('#targetTableWrapper').removeClass('d-none');
 
-            const $headers = $('#targetHeaders').empty();
-            $('<th>', { width: 60, text: 'No' }).appendTo($headers);
-            $('<th>', { text: 'Kode IKU' }).appendTo($headers);
-            $('<th>', { text: 'Sasaran Strategis' }).appendTo($headers);
+             const $headers = $('#targetHeaders').empty();
+             $('<th>', { width: 60, text: 'No' }).appendTo($headers);
+             $('<th>', { text: 'Kode IKU' }).appendTo($headers);
+             $('<th>', { text: 'Tujuan RSB' }).appendTo($headers);
+             $('<th>', { text: 'Sasaran Program' }).appendTo($headers);
+             $('<th>', { text: 'Sasaran Strategis' }).appendTo($headers);
             $('<th>', { text: 'Uraian' }).appendTo($headers);
             years.forEach(year => $('<th>', { text: `Target ${year}` }).appendTo($headers));
             $('<th>', { width: 120, text: 'Status' }).appendTo($headers);
@@ -89,18 +116,18 @@
             }
 
             response.data.forEach((item, index) => {
-                const $row = $('<tr>').attr({ 'data-iku-id': item.id });
-                $('<td>', { text: index + 1 }).appendTo($row);
-                $('<td>', { text: item.kode_iku }).appendTo($row);
-                $('<td>', { text: item.sasaran_strategis || '-' }).appendTo($row);
+                 const $row = $('<tr>').attr({ 'data-iku-id': item.id });
+                 $('<td>', { text: index + 1 }).appendTo($row);
+                 $('<td>', { text: item.kode_iku }).appendTo($row);
+                 $('<td>', { text: item.tujuan_rsb || '-' }).appendTo($row);
+                 $('<td>', { text: item.sasaran_program || '-' }).appendTo($row);
+                 $('<td>', { text: item.sasaran_strategis || '-' }).appendTo($row);
                 $('<td>', { text: item.uraian }).appendTo($row);
 
                 years.forEach(year => {
                     const value = item.target_tahunan?.[year] ?? '';
                     $('<td>').append($('<input>', {
-                        type: 'number',
-                        min: 0,
-                        step: 'any',
+                         type: 'text',
                         class: 'form-control form-control-sm target-input',
                         'data-year': year,
                         value: value,
@@ -111,9 +138,10 @@
                     class: 'save-status text-muted small',
                     text: item.status === 'draft' && Object.keys(item.target_tahunan || {}).length ? 'Draft tersimpan' : 'Belum disimpan',
                 })).appendTo($row);
-                $body.append($row);
-            });
-        }
+                 $body.append($row);
+             });
+             initDataTable();
+         }
 
         function loadData(periodeId) {
             if (!periodeId) {

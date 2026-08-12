@@ -114,13 +114,13 @@
             <li class="{{ $is('monitoring.laporan-capaian-kinerja-layanan*') }}">
                 <a href="{{ route('monitoring.laporan-capaian-kinerja-layanan') }}">
                     <i class="bi bi-file-earmark-bar-graph"></i>
-                    <span class="menu-text">Laporan Capaian Kinerja Layanan</span>
+                    <span class="menu-text">Capaian Kinerja Layanan</span>
                 </a>
             </li>
             <li class="{{ $is('monitoring.laporan-capaian-kinerja-iku*') }}">
                 <a href="{{ route('monitoring.laporan-capaian-kinerja-iku') }}">
                     <i class="bi bi-file-earmark-spreadsheet"></i>
-                    <span class="menu-text">Laporan Capaian Kinerja IKU</span>
+                    <span class="menu-text">Capaian Kinerja IKU RSB</span>
                 </a>
             </li>
         </ul>

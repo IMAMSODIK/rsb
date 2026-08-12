@@ -28,4 +28,15 @@ class IkuKinerjaLayanan extends Model
     {
         return $this->belongsTo(UnitKerja::class, 'unit_kerja_id');
     }
+
+    public function getUraianTanpaUnitAttribute(): string
+    {
+        $uraian = (string) $this->uraian;
+        $namaUnit = $this->unitKerja?->nama_unit;
+        $suffix = $namaUnit ? ' - '.$namaUnit : null;
+
+        return $suffix && str_ends_with($uraian, $suffix)
+            ? substr($uraian, 0, -strlen($suffix))
+            : $uraian;
+    }
 }

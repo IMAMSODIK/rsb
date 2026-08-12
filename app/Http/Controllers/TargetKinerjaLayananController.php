@@ -40,9 +40,16 @@ class TargetKinerjaLayananController extends Controller
 
             $periode = PeriodeRsb::findOrFail($data['periode_id']);
             $years = range((int) $periode->tahun_awal, (int) $periode->tahun_akhir);
-            $kategori = KategoriKinerjaLayanan::when(!$isAdmin, fn ($query) => $query->where('unit_kerja_id', $unitKerja->id))
-                ->orderBy('kode_kategori')
-                ->get();
+            $kategori = KategoriKinerjaLayanan::with(['layanan', 'unitKerja'])
+                ->when(!$isAdmin, fn ($query) => $query->where('unit_kerja_id', $unitKerja->id))
+                ->get()
+                ->sortBy(fn ($item) => sprintf(
+                    '%s|%s|%s|%s',
+                    $item->unitKerja?->kode_unit ?? '',
+                    $item->layanan?->kode_layanan ?? '',
+                    $item->kode_kategori ?? '',
+                    $item->uraian ?? ''
+                ));
             $targets = TargetKinerjaLayanan::where('periode_rsb_id', $periode->id)
                 ->when(!$isAdmin, fn ($query) => $query->where('unit_kerja_id', $unitKerja->id))
                 ->get()
@@ -64,7 +71,9 @@ class TargetKinerjaLayananController extends Controller
                     return [
                         'id' => $item->id,
                         'kode_kategori' => $item->kode_kategori,
-                        'uraian' => $item->uraian,
+                        'uraian' => $item->uraian_tanpa_unit,
+                        'unit_kerja' => $item->unitKerja ? $item->unitKerja->kode_unit.' - '.$item->unitKerja->nama_unit : '-',
+                        'jenis_kinerja_layanan' => $item->layanan ? $item->layanan->kode_layanan.' - '.$item->layanan->uraian : '-',
                         'target_tahunan' => $targets->get($item->id)?->target_tahunan ?? [],
                         'status' => $targets->get($item->id)?->status ?? 'draft',
                     ];
@@ -121,16 +130,7 @@ class TargetKinerjaLayananController extends Controller
                 if (!in_array((int) $year, $years, true)) {
                     continue;
                 }
-                if ($value === null || $value === '') {
-                    $targets[(string) $year] = null;
-                    continue;
-                }
-                if (!is_numeric($value) || $value < 0) {
-                    throw ValidationException::withMessages([
-                        'target_tahunan' => 'Target tahunan harus berupa angka nol atau lebih.',
-                    ]);
-                }
-                $targets[(string) $year] = (float) $value;
+                $targets[(string) $year] = $this->performanceValue($value);
             }
 
             TargetKinerjaLayanan::updateOrCreate(
@@ -167,5 +167,29 @@ class TargetKinerjaLayananController extends Controller
     private function operatorUnit(): ?UnitKerja
     {
         return UnitKerja::where('operator_id', auth()->id())->first();
+    }
+
+    private function performanceValue($value): float|string|null
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        if (is_array($value)) {
+            throw ValidationException::withMessages([
+                'target_tahunan' => 'Target tahunan harus berupa angka atau teks.',
+            ]);
+        }
+        if (is_numeric($value)) {
+            if ($value < 0) {
+                throw ValidationException::withMessages([
+                    'target_tahunan' => 'Target numerik tidak boleh kurang dari nol.',
+                ]);
+            }
+
+            return (float) $value;
+        }
+
+        $value = trim((string) $value);
+        return $value === '' ? null : $value;
     }
 }

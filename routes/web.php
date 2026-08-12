@@ -6,6 +6,7 @@ use App\Http\Controllers\IkuLayananController;
 use App\Http\Controllers\JenisLayananController;
 use App\Http\Controllers\KategoriLayananController;
 use App\Http\Controllers\PeriodeRsbController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SasaranProgramController;
 use App\Http\Controllers\SasaranStrategisController;
 use App\Http\Controllers\SliderItemController;
@@ -25,6 +26,8 @@ Route::redirect('/', '/dashboard');
 // Auth routes (hanya untuk user yang sudah login)
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     // Master Data
@@ -80,14 +83,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('laporan-capaian-kinerja-layanan/data', [ReportController::class, 'dataLayanan'])
             ->name('laporan-capaian-kinerja-layanan.data');
         Route::get('laporan-capaian-kinerja-layanan/export/{format}', [ReportController::class, 'exportLayanan'])
-            ->whereIn('format', ['excel', 'pdf'])
+            ->where('format', 'excel')
             ->name('laporan-capaian-kinerja-layanan.export');
         Route::get('laporan-capaian-kinerja-iku', [ReportController::class, 'iku'])
             ->name('laporan-capaian-kinerja-iku');
         Route::get('laporan-capaian-kinerja-iku/data', [ReportController::class, 'dataIku'])
             ->name('laporan-capaian-kinerja-iku.data');
         Route::get('laporan-capaian-kinerja-iku/export/{format}', [ReportController::class, 'exportIku'])
-            ->whereIn('format', ['excel', 'pdf'])
+            ->where('format', 'excel')
             ->name('laporan-capaian-kinerja-iku.export');
     });
 });

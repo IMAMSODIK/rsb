@@ -37,6 +37,8 @@
                             <thead>
                                 <tr id="targetHeaders">
                                     <th width="60">No</th>
+                                    <th>Unit Kerja</th>
+                                    <th>Jenis Kinerja Layanan</th>
                                     <th>Kode Kategori</th>
                                     <th>Uraian</th>
                                 </tr>
@@ -65,7 +67,30 @@
             $('#targetTableWrapper').addClass('d-none');
         }
 
+        function destroyDataTable() {
+            if ($.fn.DataTable.isDataTable('#targetTable')) {
+                $('#targetTable').DataTable().destroy();
+            }
+        }
+
+        function initDataTable() {
+            $('#targetTable').DataTable({
+                order: [],
+                scrollX: true,
+                language: {
+                    search: 'Cari:',
+                    lengthMenu: 'Tampilkan _MENU_ data',
+                    info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',
+                    infoEmpty: 'Tidak ada data',
+                    zeroRecords: 'Data tidak ditemukan',
+                    emptyTable: 'Belum ada data target kinerja layanan',
+                    paginate: { previous: 'Sebelumnya', next: 'Berikutnya' },
+                },
+            });
+        }
+
         function renderTable(response) {
+            destroyDataTable();
             years = response.years;
             $('#unitInfo').removeClass('d-none').text(
                 `Unit kerja: ${response.unit_kerja.kode_unit} - ${response.unit_kerja.nama_unit} | Status penyimpanan: Draft otomatis`
@@ -73,9 +98,11 @@
             $('#tableMessage').addClass('d-none');
             $('#targetTableWrapper').removeClass('d-none');
 
-            const $headers = $('#targetHeaders').empty();
-            $('<th>', { width: 60, text: 'No' }).appendTo($headers);
-            $('<th>', { text: 'Kode Kategori' }).appendTo($headers);
+             const $headers = $('#targetHeaders').empty();
+             $('<th>', { width: 60, text: 'No' }).appendTo($headers);
+             $('<th>', { text: 'Unit Kerja' }).appendTo($headers);
+             $('<th>', { text: 'Jenis Kinerja Layanan' }).appendTo($headers);
+             $('<th>', { text: 'Kode Kategori' }).appendTo($headers);
             $('<th>', { text: 'Uraian' }).appendTo($headers);
             years.forEach(year => $('<th>', { text: `Target ${year}` }).appendTo($headers));
             $('<th>', { width: 120, text: 'Status' }).appendTo($headers);
@@ -87,20 +114,20 @@
             }
 
             response.data.forEach((item, index) => {
-                const $row = $('<tr>').attr({ 'data-category-id': item.id });
-                $('<td>', { text: index + 1 }).appendTo($row);
-                $('<td>', { text: item.kode_kategori }).appendTo($row);
+                 const $row = $('<tr>').attr({ 'data-category-id': item.id });
+                 $('<td>', { text: index + 1 }).appendTo($row);
+                 $('<td>', { text: item.unit_kerja || '-' }).appendTo($row);
+                 $('<td>', { text: item.jenis_kinerja_layanan || '-' }).appendTo($row);
+                 $('<td>', { text: item.kode_kategori }).appendTo($row);
                 $('<td>', { text: item.uraian }).appendTo($row);
 
                 years.forEach(year => {
                     const value = item.target_tahunan?.[year] ?? '';
                     $('<td>').append($('<input>', {
-                        type: 'number',
-                        min: 0,
-                        step: 'any',
+                         type: 'text',
                         class: 'form-control form-control-sm target-input',
                         'data-year': year,
-                        value: value,
+                         value: value,
                     })).appendTo($row);
                 });
 
@@ -108,9 +135,10 @@
                     class: 'save-status text-muted small',
                     text: item.status === 'draft' && Object.keys(item.target_tahunan || {}).length ? 'Draft tersimpan' : 'Belum disimpan',
                 })).appendTo($row);
-                $body.append($row);
-            });
-        }
+                 $body.append($row);
+             });
+             initDataTable();
+         }
 
         function loadData(periodeId) {
             if (!periodeId) {
