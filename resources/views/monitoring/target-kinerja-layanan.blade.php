@@ -18,6 +18,15 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">Target Kinerja Layanan</h5>
                     <div class="d-flex align-items-center gap-2">
+                        @if ($isAdmin)
+                            <label for="unit_kerja_id" class="mb-0 text-nowrap">Unit Kerja</label>
+                            <select id="unit_kerja_id" class="form-select form-select-sm" style="min-width: 180px">
+                                <option value="">Semua Unit Kerja</option>
+                                @foreach ($unitKerjaList as $unit)
+                                    <option value="{{ $unit->id }}">{{ $unit->kode_unit }} - {{ $unit->nama_unit }}</option>
+                                @endforeach
+                            </select>
+                        @endif
                         <label for="periode_id" class="mb-0 text-nowrap">Periode</label>
                         <select id="periode_id" class="form-select form-select-sm" style="min-width: 180px">
                             <option value="">-- Pilih Periode --</option>
@@ -150,7 +159,10 @@
 
             $('#tableMessage').removeClass('d-none').text('Memuat data...');
             $('#targetTableWrapper').addClass('d-none');
-            fetch(`${DATA_URL}?periode_id=${encodeURIComponent(periodeId)}`, {
+            const params = new URLSearchParams({ periode_id: periodeId });
+            const unitKerjaId = $('#unit_kerja_id').val();
+            if (unitKerjaId) params.append('unit_kerja_id', unitKerjaId);
+            fetch(`${DATA_URL}?${params.toString()}`, {
                 headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
             })
                 .then(response => response.json())
@@ -195,6 +207,9 @@
 
         $('#periode_id').on('change', function () {
             loadData(this.value);
+        });
+        $('#unit_kerja_id').on('change', function () {
+            loadData($('#periode_id').val());
         });
 
         $('#targetTable').on('input', '.target-input', function () {

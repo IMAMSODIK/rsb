@@ -59,6 +59,15 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">Realisasi Kinerja Layanan</h5>
                     <div class="d-flex align-items-center gap-2">
+                        @if ($isAdmin)
+                            <label for="unit_kerja_id" class="mb-0 text-nowrap">Unit Kerja</label>
+                            <select id="unit_kerja_id" class="form-select form-select-sm" style="min-width: 180px">
+                                <option value="">Semua Unit Kerja</option>
+                                @foreach ($unitKerjaList as $unit)
+                                    <option value="{{ $unit->id }}">{{ $unit->kode_unit }} - {{ $unit->nama_unit }}</option>
+                                @endforeach
+                            </select>
+                        @endif
                         <label for="periode_id" class="mb-0 text-nowrap">Periode</label>
                         <select id="periode_id" class="form-select form-select-sm" style="min-width: 180px">
                             <option value="">-- Pilih Periode --</option>
@@ -229,13 +238,12 @@
                         })).appendTo($row);
                         const $documents = $('<div>', { class: 'document-list mb-2' });
                         renderDocuments($documents, documents[`${year}_${semester}`] || []);
-                        const $documentCell = $('<td>', { class: 'dokumen-cell' }).append($documents).append($('<input>', {
-                            type: 'file', multiple: true, class: 'form-control form-control-sm document-input',
-                            accept: '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png', 'data-year': year, 'data-semester': semester,
-                            disabled: IS_ADMIN,
-                        }));
+                        const $documentCell = $('<td>', { class: 'dokumen-cell' }).append($documents);
                         if (!IS_ADMIN) {
-                            $documentCell.append($('<button>', {
+                            $documentCell.append($('<input>', {
+                                type: 'file', multiple: true, class: 'form-control form-control-sm document-input',
+                                accept: '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png', 'data-year': year, 'data-semester': semester,
+                            })).append($('<button>', {
                                 type: 'button', class: 'btn btn-sm btn-outline-primary mt-1 upload-documents',
                                 'data-year': year, 'data-semester': semester, text: 'Upload',
                             }));
@@ -264,7 +272,10 @@
             }
             $('#tableMessage').removeClass('d-none').text('Memuat data...');
             $('#tableWrapper').addClass('d-none');
-            fetch(`${DATA_URL}?periode_id=${encodeURIComponent(periodeId)}`, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
+            const params = new URLSearchParams({ periode_id: periodeId });
+            const unitKerjaId = $('#unit_kerja_id').val();
+            if (unitKerjaId) params.append('unit_kerja_id', unitKerjaId);
+            fetch(`${DATA_URL}?${params.toString()}`, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
                 .then(response => response.json())
                 .then(response => {
                     if (response.success) {
@@ -300,6 +311,7 @@
 
         let responseYears = [];
         $('#periode_id').on('change', function () { loadData(this.value); });
+        $('#unit_kerja_id').on('change', function () { loadData($('#periode_id').val()); });
         $('#realisasiTable').on('input', '.realization-input, .semester-note', function () {
             const $row = $(this).closest('tr');
             if ($(this).hasClass('realization-input')) calculatePercentage($row, $(this).data('year'));

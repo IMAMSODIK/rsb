@@ -21,16 +21,19 @@ class RealisasiKinerjaIkuRsbController extends Controller
         $periode = PeriodeRsb::orderBy('tahun_awal')->get();
         $periodeAktif = $periode->firstWhere('is_active', true);
         $isAdmin = auth()->user()->role === 'admin';
+        $unitKerjaList = $isAdmin ? UnitKerja::orderBy('kode_unit')->get() : collect();
 
-        return view('monitoring.realisasi-kinerja-iku-rsb', compact('periode', 'periodeAktif', 'isAdmin'));
+        return view('monitoring.realisasi-kinerja-iku-rsb', compact('periode', 'periodeAktif', 'isAdmin', 'unitKerjaList'));
     }
 
     public function data(Request $request): JsonResponse
     {
         try {
-            $data = $request->validate(['periode_id' => 'required|exists:periode_rsb,id']);
+            $data = $request->validate(['periode_id' => 'required|exists:periode_rsb,id', 'unit_kerja_id' => 'nullable|exists:unit_kerja,id']);
             $isAdmin = auth()->user()->role === 'admin';
-            $unitKerja = $isAdmin ? null : $this->operatorUnit();
+            $unitKerja = $isAdmin
+                ? (empty($data['unit_kerja_id']) ? null : UnitKerja::find($data['unit_kerja_id']))
+                : $this->operatorUnit();
             if (!$isAdmin && !$unitKerja) {
                 return response()->json(['success' => false, 'message' => 'Unit kerja operator belum ditentukan.'], 422);
             }
@@ -39,7 +42,7 @@ class RealisasiKinerjaIkuRsbController extends Controller
             $years = range((int) $periode->tahun_awal, (int) $periode->tahun_akhir);
             $targets = TargetKinerjaIkuRsb::with(['iku.sasaranStrategis.sasaranProgram.tujuan', 'iku.unitKerja', 'unitKerja'])
                 ->where('periode_rsb_id', $periode->id)
-                ->when(!$isAdmin, fn ($query) => $query->where('unit_kerja_id', $unitKerja->id))
+                ->when($unitKerja, fn ($query) => $query->where('unit_kerja_id', $unitKerja->id))
                 ->orderBy('iku_kinerja_layanan_id')
                 ->get();
             $realisasi = RealisasiKinerjaIkuRsb::with('dokumen')

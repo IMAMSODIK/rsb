@@ -23,7 +23,17 @@
     <div class="app-body"><div class="col-12"><div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="card-title mb-0">Realisasi Kinerja IKU RSB</h5>
-            <div class="d-flex align-items-center gap-2"><label for="periode_id" class="mb-0 text-nowrap">Periode</label>
+            <div class="d-flex align-items-center gap-2">
+                @if ($isAdmin)
+                    <label for="unit_kerja_id" class="mb-0 text-nowrap">Unit Kerja</label>
+                    <select id="unit_kerja_id" class="form-select form-select-sm" style="min-width: 180px">
+                        <option value="">Semua Unit Kerja</option>
+                        @foreach ($unitKerjaList as $unit)
+                            <option value="{{ $unit->id }}">{{ $unit->kode_unit }} - {{ $unit->nama_unit }}</option>
+                        @endforeach
+                    </select>
+                @endif
+                <label for="periode_id" class="mb-0 text-nowrap">Periode</label>
                 <select id="periode_id" class="form-select form-select-sm" style="min-width: 180px">
                     <option value="">-- Pilih Periode --</option>
                     @foreach ($periode as $item)
@@ -123,9 +133,9 @@
                          $('<td>', { class: 'numeric-cell' }).append($('<input>', { type: 'text', class: 'form-control form-control-sm realization-input', 'data-year': year, 'data-semester': semester, value: value.nilai ?? '', disabled: IS_ADMIN })).appendTo($row);
                         $('<td>', { class: 'keterangan-cell' }).append($('<textarea>', { class: 'form-control form-control-sm semester-note', rows: 2, 'data-year': year, 'data-semester': semester, text: value.keterangan || '', disabled: IS_ADMIN })).appendTo($row);
                         const $box = $('<div>', { class: 'document-list mb-2' }); docs($box, (item.dokumen || {})[`${year}_${semester}`] || []);
-                        const $documentCell = $('<td>', { class: 'dokumen-cell' }).append($box).append($('<input>', { type: 'file', multiple: true, class: 'form-control form-control-sm document-input', accept: '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png', 'data-year': year, 'data-semester': semester, disabled: IS_ADMIN }));
+                        const $documentCell = $('<td>', { class: 'dokumen-cell' }).append($box);
                         if (!IS_ADMIN) {
-                            $documentCell.append($('<button>', { type: 'button', class: 'btn btn-sm btn-outline-primary mt-1 upload-documents', 'data-year': year, 'data-semester': semester, text: 'Upload' }));
+                            $documentCell.append($('<input>', { type: 'file', multiple: true, class: 'form-control form-control-sm document-input', accept: '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png', 'data-year': year, 'data-semester': semester })).append($('<button>', { type: 'button', class: 'btn btn-sm btn-outline-primary mt-1 upload-documents', 'data-year': year, 'data-semester': semester, text: 'Upload' }));
                         }
                         $documentCell.appendTo($row);
                     });
@@ -138,7 +148,10 @@
         function load(period) {
             if (!period) return message('Pilih periode untuk memuat realisasi IKU.');
             $('#tableMessage').removeClass('d-none').text('Memuat data...');
-            fetch(`${DATA_URL}?periode_id=${encodeURIComponent(period)}`, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } }).then(r => r.json()).then(r => { if (r.success) { render(r); } else message(r.message || 'Gagal memuat data.'); }).catch(() => message('Gagal memuat realisasi kinerja IKU RSB.'));
+            const params = new URLSearchParams({ periode_id: period });
+            const unitKerjaId = $('#unit_kerja_id').val();
+            if (unitKerjaId) params.append('unit_kerja_id', unitKerjaId);
+            fetch(`${DATA_URL}?${params.toString()}`, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } }).then(r => r.json()).then(r => { if (r.success) { render(r); } else message(r.message || 'Gagal memuat data.'); }).catch(() => message('Gagal memuat realisasi kinerja IKU RSB.'));
         }
         function save($row) {
             const annual = {}; const targetId = $row.data('target-id');
@@ -151,6 +164,7 @@
             fetch(DRAFT_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': window.csrfToken, 'Accept': 'application/json' }, body: JSON.stringify({ target_id: targetId, realisasi_tahunan: annual }) }).then(r => r.json()).then(r => { if (r.success) { $status.text('Draft tersimpan'); Object.entries(r.realisasi_tahunan || {}).forEach(([year, value]) => $row.find(`[data-percentage-year="${year}"]`).text(value.persentase == null ? '-' : `${Number(value.persentase).toFixed(2)}%`)); } else $status.text(r.message || 'Gagal menyimpan').addClass('text-danger'); }).catch(() => $status.text('Gagal menyimpan').addClass('text-danger'));
         }
         $('#periode_id').on('change', function () { load(this.value); });
+        $('#unit_kerja_id').on('change', function () { load($('#periode_id').val()); });
         $('#realisasiTable').on('input', '.realization-input, .semester-note', function () { const $row = $(this).closest('tr'); if ($(this).hasClass('realization-input')) percentage($row); const id = $row.data('target-id'); clearTimeout(saveTimers[id]); $row.find('.save-status').text('Menunggu...'); saveTimers[id] = setTimeout(() => save($row), 700); });
         $('#realisasiTable').on('click', '.upload-documents', function () { const $row = $(this).closest('tr'); const year = $(this).data('year'); const semester = $(this).data('semester'); const input = $row.find(`.document-input[data-year="${year}"][data-semester="${semester}"]`)[0]; if (!input.files.length) return showAlert('warning', 'Pilih dokumen terlebih dahulu.'); const fd = new FormData(); fd.append('target_id', $row.data('target-id')); fd.append('tahun', year); fd.append('semester', semester); Array.from(input.files).forEach(file => fd.append('dokumen[]', file)); fetch(DOCUMENT_URL, { method: 'POST', headers: { 'X-CSRF-TOKEN': window.csrfToken, 'Accept': 'application/json' }, body: fd }).then(r => r.json()).then(r => r.success ? (showAlert('success', r.message), load($('#periode_id').val())) : showAlert('error', r.message)).catch(() => showAlert('error', 'Dokumen gagal diunggah.')); });
         $('#realisasiTable').on('click', '.delete-document', function () { fetch(`${DOCUMENT_DELETE_URL}/${$(this).data('id')}`, { method: 'DELETE', headers: { 'X-CSRF-TOKEN': window.csrfToken, 'Accept': 'application/json' } }).then(r => r.json()).then(r => r.success ? (showAlert('success', r.message), load($('#periode_id').val())) : showAlert('error', r.message)).catch(() => showAlert('error', 'Dokumen gagal dihapus.')); });
