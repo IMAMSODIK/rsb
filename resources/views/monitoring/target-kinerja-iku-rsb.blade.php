@@ -126,12 +126,13 @@
 
                 years.forEach(year => {
                     const value = item.target_tahunan?.[year] ?? '';
-                    $('<td>').append($('<input>', {
-                         type: 'text',
-                        class: 'form-control form-control-sm target-input',
-                        'data-year': year,
-                        value: value,
-                    })).appendTo($row);
+                     $('<td>').append($('<input>', {
+                          type: 'text',
+                         class: 'form-control form-control-sm target-input',
+                         'data-year': year,
+                         value: value,
+                         disabled: IS_ADMIN,
+                     })).appendTo($row);
                 });
 
                 $('<td>').append($('<span>', {
@@ -159,7 +160,6 @@
                 .then(response => {
                     if (response.success) {
                         renderTable(response);
-                        if (IS_ADMIN) $('#targetTable .target-input').prop('disabled', true);
                     }
                     else showMessage(response.message || 'Gagal memuat data.');
                 })

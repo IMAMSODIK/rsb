@@ -76,7 +76,9 @@
             list.forEach(doc => {
                 const $item = $('<div>', { class: 'd-flex align-items-center gap-1 mb-1' });
                 $('<a>', { href: doc.url, target: '_blank', class: 'small text-truncate', text: doc.nama_asli }).appendTo($item);
-                $('<button>', { type: 'button', class: 'btn btn-sm btn-link text-danger p-0 delete-document', 'data-id': doc.id, html: '<i class="bi bi-x-circle"></i>' }).appendTo($item);
+                if (!IS_ADMIN) {
+                    $('<button>', { type: 'button', class: 'btn btn-sm btn-link text-danger p-0 delete-document', 'data-id': doc.id, html: '<i class="bi bi-x-circle"></i>' }).appendTo($item);
+                }
                 $box.append($item);
             });
         }
@@ -118,10 +120,14 @@
                     const target = item.target_tahunan?.[year] ?? ''; const annual = item.realisasi_tahunan?.[year] || {};
                     $('<td>', { class: 'target-cell' }).append($('<span>', { class: 'badge bg-light text-dark target-value', text: target === '' ? '-' : target, 'data-target-year': year, 'data-target': target })).appendTo($row);
                     [[1, annual.semester_1 || {}], [2, annual.semester_2 || {}]].forEach(([semester, value]) => {
-                         $('<td>', { class: 'numeric-cell' }).append($('<input>', { type: 'text', class: 'form-control form-control-sm realization-input', 'data-year': year, 'data-semester': semester, value: value.nilai ?? '' })).appendTo($row);
-                        $('<td>', { class: 'keterangan-cell' }).append($('<textarea>', { class: 'form-control form-control-sm semester-note', rows: 2, 'data-year': year, 'data-semester': semester, text: value.keterangan || '' })).appendTo($row);
+                         $('<td>', { class: 'numeric-cell' }).append($('<input>', { type: 'text', class: 'form-control form-control-sm realization-input', 'data-year': year, 'data-semester': semester, value: value.nilai ?? '', disabled: IS_ADMIN })).appendTo($row);
+                        $('<td>', { class: 'keterangan-cell' }).append($('<textarea>', { class: 'form-control form-control-sm semester-note', rows: 2, 'data-year': year, 'data-semester': semester, text: value.keterangan || '', disabled: IS_ADMIN })).appendTo($row);
                         const $box = $('<div>', { class: 'document-list mb-2' }); docs($box, (item.dokumen || {})[`${year}_${semester}`] || []);
-                        $('<td>', { class: 'dokumen-cell' }).append($box).append($('<input>', { type: 'file', multiple: true, class: 'form-control form-control-sm document-input', accept: '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png', 'data-year': year, 'data-semester': semester })).append($('<button>', { type: 'button', class: 'btn btn-sm btn-outline-primary mt-1 upload-documents', 'data-year': year, 'data-semester': semester, text: 'Upload' })).appendTo($row);
+                        const $documentCell = $('<td>', { class: 'dokumen-cell' }).append($box).append($('<input>', { type: 'file', multiple: true, class: 'form-control form-control-sm document-input', accept: '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png', 'data-year': year, 'data-semester': semester, disabled: IS_ADMIN }));
+                        if (!IS_ADMIN) {
+                            $documentCell.append($('<button>', { type: 'button', class: 'btn btn-sm btn-outline-primary mt-1 upload-documents', 'data-year': year, 'data-semester': semester, text: 'Upload' }));
+                        }
+                        $documentCell.appendTo($row);
                     });
                     $('<td>', { class: 'text-nowrap numeric-cell' }).append($('<span>', { class: 'percentage-value', 'data-percentage-year': year, text: annual.persentase == null ? '-' : `${Number(annual.persentase).toFixed(2)}%` })).appendTo($row);
                 });
@@ -132,7 +138,7 @@
         function load(period) {
             if (!period) return message('Pilih periode untuk memuat realisasi IKU.');
             $('#tableMessage').removeClass('d-none').text('Memuat data...');
-            fetch(`${DATA_URL}?periode_id=${encodeURIComponent(period)}`, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } }).then(r => r.json()).then(r => { if (r.success) { render(r); if (IS_ADMIN) { $('#realisasiTable .realization-input, #realisasiTable .semester-note, #realisasiTable .document-input').prop('disabled', true); $('#realisasiTable .upload-documents, #realisasiTable .delete-document').remove(); } } else message(r.message || 'Gagal memuat data.'); }).catch(() => message('Gagal memuat realisasi kinerja IKU RSB.'));
+            fetch(`${DATA_URL}?periode_id=${encodeURIComponent(period)}`, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } }).then(r => r.json()).then(r => { if (r.success) { render(r); } else message(r.message || 'Gagal memuat data.'); }).catch(() => message('Gagal memuat realisasi kinerja IKU RSB.'));
         }
         function save($row) {
             const annual = {}; const targetId = $row.data('target-id');

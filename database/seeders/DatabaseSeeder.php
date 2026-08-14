@@ -79,14 +79,40 @@ class DatabaseSeeder extends Seeder
             'Prestasi dan Layanan Kemahasiswaan',
             'Kualitas Tata Kelola',
         ];
+        $uraianKategoriKemahasiswaan = [
+            'Layanan Informasi Kemahasiswaan',
+            'Layanan Beasiswa Mahasiswa',
+            'Layanan Bantuan Biaya Pendidikan',
+            'Pembinaan Organisasi Mahasiswa',
+            'Pembinaan UKM dan Olahraga',
+            'Pembinaan Seni dan Budaya',
+            'Pengembangan Kaderisasi Mahasiswa',
+            'Layanan Prestasi Mahasiswa',
+            'Pendampingan Lomba Ilmiah Mahasiswa',
+            'Program Kreativitas Mahasiswa',
+            'Layanan Magang Mahasiswa',
+            'Layanan Kewirausahaan Mahasiswa',
+            'Program Pertukaran Mahasiswa',
+            'Layanan Kesejahteraan Mahasiswa',
+            'Layanan Konseling Mahasiswa',
+            'Layanan Kesehatan Mahasiswa',
+            'Layanan Asrama dan Perumahan',
+            'Tracer Study dan Karier Alumni',
+            'Layanan Parkir dan Transportasi Mahasiswa',
+            'Layanan Aktivitas dan Dispensasi Mahasiswa',
+        ];
         $unitCodes = array_keys($units);
-        foreach ($unitCodes as $unitIndex => $unitCode) {
-            foreach ($uraianKategori as $layananIndex => $uraian) {
-                $nomorKategori = ($unitIndex * 5) + $layananIndex + 1;
+        $nomorKategori = 1;
+        foreach ($unitCodes as $unitCode) {
+            $daftarUraian = $unitCode === 'UK-03' ? $uraianKategoriKemahasiswaan : $uraianKategori;
+            foreach ($daftarUraian as $layananIndex => $uraian) {
+                $kodeLayanan = $unitCode === 'UK-03'
+                    ? 'LYN-04'
+                    : 'LYN-'.str_pad((string) ($layananIndex + 1), 2, '0', STR_PAD_LEFT);
                 $kategoriData = [
                     'kode_kategori' => 'KAT-'.str_pad((string) $nomorKategori, 2, '0', STR_PAD_LEFT),
-                    'uraian' => $uraian.' - '.$units[$unitCode]->nama_unit,
-                    'layanan' => 'LYN-'.str_pad((string) ($layananIndex + 1), 2, '0', STR_PAD_LEFT),
+                    'uraian' => $uraian,
+                    'layanan' => $kodeLayanan,
                     'unit' => $unitCode,
                 ];
             $kategori[$kategoriData['kode_kategori']] = KategoriKinerjaLayanan::updateOrCreate(
@@ -97,6 +123,7 @@ class DatabaseSeeder extends Seeder
                     'unit_kerja_id' => $units[$kategoriData['unit']]->id,
                 ]
             );
+            $nomorKategori++;
             }
         }
 
