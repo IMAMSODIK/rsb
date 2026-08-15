@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\IkuKinerjaLayanan;
+use App\Models\PeriodeRsb;
 use App\Models\SasaranStrategis;
 use App\Models\UnitKerja;
 use Exception;
@@ -17,12 +18,19 @@ class IkuLayananController extends Controller
     {
         try {
             if ($request->ajax()) {
-                $data = IkuKinerjaLayanan::with(['sasaranStrategis', 'unitKerja'])->orderBy('kode_iku')->get();
+                $periodeId = $request->query('periode_rsb_id');
+                $data = IkuKinerjaLayanan::with(['sasaranStrategis', 'unitKerja'])
+                    ->when($periodeId, fn ($query) => $query->whereHas('sasaranStrategis.sasaranProgram.tujuan', fn ($q) => $q->where(function ($sub) use ($periodeId) {
+                        $sub->whereNull('periode_rsb_id')->orWhere('periode_rsb_id', $periodeId);
+                    })))
+                    ->orderBy('kode_iku')->get();
                 return response()->json(['data' => $data]);
             }
             $sasaranStrategis = SasaranStrategis::orderBy('kode_sasaran_strategis')->get();
             $unitKerja = UnitKerja::orderBy('kode_unit')->get();
-            return view('master.iku-layanan.index', compact('sasaranStrategis', 'unitKerja'));
+            $periode = PeriodeRsb::orderBy('tahun_awal')->get();
+            $periodeAktif = $periode->firstWhere('is_active', true);
+            return view('master.iku-layanan.index', compact('sasaranStrategis', 'unitKerja', 'periode', 'periodeAktif'));
         } catch (Exception $e) {
             Log::error('IkuLayanan index error: ' . $e->getMessage());
             if ($request->ajax()) {

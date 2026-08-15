@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\JenisKinerjaLayanan;
 use App\Models\KategoriKinerjaLayanan;
+use App\Models\PeriodeRsb;
 use App\Models\UnitKerja;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -17,13 +18,19 @@ class KategoriLayananController extends Controller
     {
         try {
             if ($request->ajax()) {
+                $periodeId = $request->query('periode_rsb_id');
                 $data = KategoriKinerjaLayanan::with(['layanan', 'unitKerja'])
+                    ->when($periodeId, fn ($query) => $query->whereHas('layanan', fn ($q) => $q->where(function ($sub) use ($periodeId) {
+                        $sub->whereNull('periode_rsb_id')->orWhere('periode_rsb_id', $periodeId);
+                    })))
                     ->orderBy('kode_kategori')->get();
                 return response()->json(['data' => $data]);
             }
             $layanan = JenisKinerjaLayanan::orderBy('kode_layanan')->get();
             $unitKerja = UnitKerja::orderBy('kode_unit')->get();
-            return view('master.kategori-layanan.index', compact('layanan', 'unitKerja'));
+            $periode = PeriodeRsb::orderBy('tahun_awal')->get();
+            $periodeAktif = $periode->firstWhere('is_active', true);
+            return view('master.kategori-layanan.index', compact('layanan', 'unitKerja', 'periode', 'periodeAktif'));
         } catch (Exception $e) {
             Log::error('KategoriLayanan index error: ' . $e->getMessage());
             if ($request->ajax()) {

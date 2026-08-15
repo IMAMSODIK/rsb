@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\KategoriKinerjaLayanan;
 use App\Models\PeriodeRsb;
+use App\Models\RealisasiKinerjaLayanan;
 use App\Models\TargetKinerjaLayanan;
 use App\Models\UnitKerja;
 use Exception;
@@ -46,6 +47,9 @@ class TargetKinerjaLayananController extends Controller
             $years = range((int) $periode->tahun_awal, (int) $periode->tahun_akhir);
             $kategori = KategoriKinerjaLayanan::with(['layanan', 'unitKerja'])
                 ->when($unitKerja, fn ($query) => $query->where('unit_kerja_id', $unitKerja->id))
+                ->whereHas('layanan', fn ($query) => $query->where(function ($q) use ($periode) {
+                    $q->whereNull('periode_rsb_id')->orWhere('periode_rsb_id', $periode->id);
+                }))
                 ->get()
                 ->sortBy(fn ($item) => sprintf(
                     '%s|%s|%s|%s',
@@ -101,16 +105,14 @@ class TargetKinerjaLayananController extends Controller
     public function saveDraft(Request $request): JsonResponse
     {
         try {
-            if (auth()->user()->role === 'admin') {
-                return response()->json(['success' => false, 'message' => 'Admin hanya dapat melihat data monitoring.'], 403);
-            }
             $data = $request->validate([
                 'periode_id' => 'required|exists:periode_rsb,id',
                 'kategori_id' => 'required|exists:kategori_kinerja_layanan,id',
                 'target_tahunan' => 'required|array',
             ]);
-            $unitKerja = $this->operatorUnit();
-            if (!$unitKerja) {
+            $isAdmin = auth()->user()->role === 'admin';
+            $unitKerja = $isAdmin ? null : $this->operatorUnit();
+            if (!$isAdmin && !$unitKerja) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unit kerja operator belum ditentukan.',
@@ -119,12 +121,19 @@ class TargetKinerjaLayananController extends Controller
 
             $periode = PeriodeRsb::findOrFail($data['periode_id']);
             $kategori = KategoriKinerjaLayanan::where('id', $data['kategori_id'])
-                ->where('unit_kerja_id', $unitKerja->id)
+                ->when($unitKerja, fn ($query) => $query->where('unit_kerja_id', $unitKerja->id))
                 ->first();
             if (!$kategori) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Kategori tidak sesuai dengan unit kerja operator.',
+                ], 422);
+            }
+            $layananPeriode = $kategori->layanan?->periode_rsb_id;
+            if ($layananPeriode !== null && (int) $layananPeriode !== (int) $periode->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Jenis kinerja layanan tidak terdaftar pada periode ini.',
                 ], 422);
             }
 
@@ -137,11 +146,26 @@ class TargetKinerjaLayananController extends Controller
                 $targets[(string) $year] = $this->performanceValue($value);
             }
 
+            $existing = TargetKinerjaLayanan::where('periode_rsb_id', $periode->id)
+                ->where('kategori_id', $kategori->id)
+                ->where('unit_kerja_id', $unitKerja?->id ?? $kategori->unit_kerja_id)
+                ->first();
+            if (empty(array_filter($targets, fn ($value) => $value !== null))) {
+                if ($existing && !RealisasiKinerjaLayanan::where('target_kinerja_layanan_id', $existing->id)->exists()) {
+                    $existing->delete();
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Target dikosongkan.',
+                ]);
+            }
+
             TargetKinerjaLayanan::updateOrCreate(
                 [
                     'periode_rsb_id' => $periode->id,
                     'kategori_id' => $kategori->id,
-                    'unit_kerja_id' => $unitKerja->id,
+                    'unit_kerja_id' => $unitKerja?->id ?? $kategori->unit_kerja_id,
                 ],
                 [
                     'target_tahunan' => $targets,

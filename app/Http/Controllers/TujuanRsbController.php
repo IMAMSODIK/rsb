@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PeriodeRsb;
 use App\Models\TujuanRsb;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -15,10 +16,20 @@ class TujuanRsbController extends Controller
     {
         try {
             if ($request->ajax()) {
-                $data = TujuanRsb::orderBy('kode_tujuan')->get();
+                $data = TujuanRsb::with('periode')->orderBy('kode_tujuan')->get()
+                    ->map(fn ($item) => [
+                        'id' => $item->id,
+                        'kode_tujuan' => $item->kode_tujuan,
+                        'uraian' => $item->uraian,
+                        'periode_rsb_id' => $item->periode_rsb_id,
+                        'periode_label' => $item->periode
+                            ? $item->periode->tahun_awal.' - '.$item->periode->tahun_akhir.($item->periode->is_active ? ' (Aktif)' : '')
+                            : null,
+                    ]);
                 return response()->json(['data' => $data]);
             }
-            return view('master.tujuan-rsb.index');
+            $periode = PeriodeRsb::orderBy('tahun_awal')->get();
+            return view('master.tujuan-rsb.index', compact('periode'));
         } catch (Exception $e) {
             Log::error('TujuanRsb index error: ' . $e->getMessage());
             if ($request->ajax()) {
@@ -34,10 +45,12 @@ class TujuanRsbController extends Controller
             $data = $request->validate([
                 'kode_tujuan' => 'required|string|max:50|unique:tujuan_rsb,kode_tujuan',
                 'uraian'      => 'required|string',
+                'periode_rsb_id' => 'nullable|exists:periode_rsb,id',
             ], [
                 'kode_tujuan.required' => 'Kode tujuan wajib diisi.',
                 'kode_tujuan.unique'   => 'Kode tujuan sudah digunakan.',
                 'uraian.required'      => 'Uraian wajib diisi.',
+                'periode_rsb_id.exists' => 'Periode tidak valid.',
             ]);
 
             TujuanRsb::create($data);
@@ -68,10 +81,12 @@ class TujuanRsbController extends Controller
             $data = $request->validate([
                 'kode_tujuan' => 'required|string|max:50|unique:tujuan_rsb,kode_tujuan,' . $id,
                 'uraian'      => 'required|string',
+                'periode_rsb_id' => 'nullable|exists:periode_rsb,id',
             ], [
                 'kode_tujuan.required' => 'Kode tujuan wajib diisi.',
                 'kode_tujuan.unique'   => 'Kode tujuan sudah digunakan.',
                 'uraian.required'      => 'Uraian wajib diisi.',
+                'periode_rsb_id.exists' => 'Periode tidak valid.',
             ]);
 
             $item->update($data);

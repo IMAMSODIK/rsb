@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PeriodeRsb;
 use App\Models\SasaranStrategis;
 use App\Models\SasaranProgram;
 use Exception;
@@ -16,11 +17,18 @@ class SasaranStrategisController extends Controller
     {
         try {
             if ($request->ajax()) {
-                $data = SasaranStrategis::with('sasaranProgram')->orderBy('kode_sasaran_strategis')->get();
+                $periodeId = $request->query('periode_rsb_id');
+                $data = SasaranStrategis::with('sasaranProgram')
+                    ->when($periodeId, fn ($query) => $query->whereHas('sasaranProgram.tujuan', fn ($q) => $q->where(function ($sub) use ($periodeId) {
+                        $sub->whereNull('periode_rsb_id')->orWhere('periode_rsb_id', $periodeId);
+                    })))
+                    ->orderBy('kode_sasaran_strategis')->get();
                 return response()->json(['data' => $data]);
             }
             $sasaranProgram = SasaranProgram::orderBy('kode_sasaran_program')->get();
-            return view('master.sasaran-strategis.index', compact('sasaranProgram'));
+            $periode = PeriodeRsb::orderBy('tahun_awal')->get();
+            $periodeAktif = $periode->firstWhere('is_active', true);
+            return view('master.sasaran-strategis.index', compact('sasaranProgram', 'periode', 'periodeAktif'));
         } catch (Exception $e) {
             Log::error('SasaranStrategis index error: ' . $e->getMessage());
             if ($request->ajax()) {

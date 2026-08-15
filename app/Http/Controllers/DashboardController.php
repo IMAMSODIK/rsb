@@ -30,8 +30,8 @@ class DashboardController extends Controller
     private function adminDashboard(?PeriodeRsb $periodeAktif): array
     {
         $units = UnitKerja::with('operator')->orderBy('kode_unit')->get();
-        $kategori = KategoriKinerjaLayanan::get(['id', 'unit_kerja_id']);
-        $iku = IkuKinerjaLayanan::get(['id', 'unit_kerja_id']);
+        $kategori = $this->kategoriInPeriode($periodeAktif);
+        $iku = $this->ikuInPeriode($periodeAktif);
         $serviceTargets = $this->serviceTargets($periodeAktif);
         $ikuTargets = $this->ikuTargets($periodeAktif);
         $serviceRealisasi = $this->serviceRealisasi($serviceTargets);
@@ -79,8 +79,8 @@ class DashboardController extends Controller
     private function operatorDashboard(?PeriodeRsb $periodeAktif, int $userId): array
     {
         $unit = UnitKerja::where('operator_id', $userId)->first();
-        $kategori = $unit ? KategoriKinerjaLayanan::where('unit_kerja_id', $unit->id)->get(['id', 'unit_kerja_id']) : collect();
-        $iku = $unit ? IkuKinerjaLayanan::where('unit_kerja_id', $unit->id)->get(['id', 'unit_kerja_id']) : collect();
+        $kategori = $unit ? $this->kategoriInPeriode($periodeAktif, $unit->id) : collect();
+        $iku = $unit ? $this->ikuInPeriode($periodeAktif, $unit->id) : collect();
         $serviceTargets = $this->serviceTargets($periodeAktif, $unit?->id);
         $ikuTargets = $this->ikuTargets($periodeAktif, $unit?->id);
         $serviceRealisasi = $this->serviceRealisasi($serviceTargets);
@@ -99,6 +99,24 @@ class DashboardController extends Controller
             ],
             'summary' => $this->summary($kategori->count(), $iku->count(), $serviceTargets, $ikuTargets, $serviceRealisasi, $ikuRealisasi),
         ];
+    }
+
+    private function kategoriInPeriode(?PeriodeRsb $periodeAktif, ?int $unitId = null): Collection
+    {
+        return KategoriKinerjaLayanan::when($unitId, fn ($query) => $query->where('unit_kerja_id', $unitId))
+            ->when($periodeAktif, fn ($query) => $query->whereHas('layanan', fn ($q) => $q->where(function ($sub) use ($periodeAktif) {
+                $sub->whereNull('periode_rsb_id')->orWhere('periode_rsb_id', $periodeAktif->id);
+            })))
+            ->get(['id', 'unit_kerja_id']);
+    }
+
+    private function ikuInPeriode(?PeriodeRsb $periodeAktif, ?int $unitId = null): Collection
+    {
+        return IkuKinerjaLayanan::when($unitId, fn ($query) => $query->where('unit_kerja_id', $unitId))
+            ->when($periodeAktif, fn ($query) => $query->whereHas('sasaranStrategis.sasaranProgram.tujuan', fn ($q) => $q->where(function ($sub) use ($periodeAktif) {
+                $sub->whereNull('periode_rsb_id')->orWhere('periode_rsb_id', $periodeAktif->id);
+            })))
+            ->get(['id', 'unit_kerja_id']);
     }
 
     private function serviceTargets(?PeriodeRsb $periodeAktif, ?int $unitId = null): Collection

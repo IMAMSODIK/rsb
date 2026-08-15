@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TujuanRsb extends Model
@@ -15,7 +16,13 @@ class TujuanRsb extends Model
     protected $fillable = [
         'kode_tujuan',
         'uraian',
+        'periode_rsb_id',
     ];
+
+    public function periode(): BelongsTo
+    {
+        return $this->belongsTo(PeriodeRsb::class, 'periode_rsb_id');
+    }
 
     public function sasaranPrograms(): HasMany
     {

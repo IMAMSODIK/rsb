@@ -46,6 +46,9 @@ class TargetKinerjaIkuRsbController extends Controller
             $years = range((int) $periode->tahun_awal, (int) $periode->tahun_akhir);
             $iku = IkuKinerjaLayanan::when($unitKerja, fn ($query) => $query->where('unit_kerja_id', $unitKerja->id))
                 ->with(['sasaranStrategis.sasaranProgram.tujuan', 'unitKerja'])
+                ->whereHas('sasaranStrategis.sasaranProgram.tujuan', fn ($query) => $query->where(function ($q) use ($periode) {
+                    $q->whereNull('periode_rsb_id')->orWhere('periode_rsb_id', $periode->id);
+                }))
                 ->orderBy('kode_iku')
                 ->get();
             $targets = TargetKinerjaIkuRsb::where('periode_rsb_id', $periode->id)
@@ -102,16 +105,14 @@ class TargetKinerjaIkuRsbController extends Controller
     public function saveDraft(Request $request): JsonResponse
     {
         try {
-            if (auth()->user()->role === 'admin') {
-                return response()->json(['success' => false, 'message' => 'Admin hanya dapat melihat data monitoring.'], 403);
-            }
             $data = $request->validate([
                 'periode_id' => 'required|exists:periode_rsb,id',
                 'iku_id' => 'required|exists:iku_kinerja_layanan,id',
                 'target_tahunan' => 'required|array',
             ]);
-            $unitKerja = $this->operatorUnit();
-            if (!$unitKerja) {
+            $isAdmin = auth()->user()->role === 'admin';
+            $unitKerja = $isAdmin ? null : $this->operatorUnit();
+            if (!$isAdmin && !$unitKerja) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unit kerja operator belum ditentukan.',
@@ -120,12 +121,19 @@ class TargetKinerjaIkuRsbController extends Controller
 
             $periode = PeriodeRsb::findOrFail($data['periode_id']);
             $iku = IkuKinerjaLayanan::where('id', $data['iku_id'])
-                ->where('unit_kerja_id', $unitKerja->id)
+                ->when($unitKerja, fn ($query) => $query->where('unit_kerja_id', $unitKerja->id))
                 ->first();
             if (!$iku) {
                 return response()->json([
                     'success' => false,
                     'message' => 'IKU tidak sesuai dengan unit kerja operator.',
+                ], 422);
+            }
+            $tujuanPeriode = $iku->sasaranStrategis?->sasaranProgram?->tujuan?->periode_rsb_id;
+            if ($tujuanPeriode !== null && (int) $tujuanPeriode !== (int) $periode->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tujuan RSB dari IKU ini tidak terdaftar pada periode terpilih.',
                 ], 422);
             }
 
@@ -142,7 +150,7 @@ class TargetKinerjaIkuRsbController extends Controller
                 [
                     'periode_rsb_id' => $periode->id,
                     'iku_kinerja_layanan_id' => $iku->id,
-                    'unit_kerja_id' => $unitKerja->id,
+                    'unit_kerja_id' => $unitKerja?->id ?? $iku->unit_kerja_id,
                 ],
                 [
                     'target_tahunan' => $targets,

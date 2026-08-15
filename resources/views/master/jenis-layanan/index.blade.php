@@ -29,6 +29,7 @@
                                     <th width="60">No</th>
                                     <th>Kode Layanan</th>
                                     <th>Uraian</th>
+                                    <th>Periode</th>
                                     <th width="120" class="text-end">Aksi</th>
                                 </tr>
                             </thead>
@@ -61,6 +62,15 @@
                             <label class="form-label">Uraian Kinerja Layanan <span class="text-danger">*</span></label>
                             <textarea name="uraian" id="uraian" class="form-control" rows="3" required></textarea>
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label">Periode</label>
+                            <select name="periode_rsb_id" id="periode_rsb_id" class="form-select">
+                                <option value="">Semua Periode</option>
+                                @foreach ($periode as $item)
+                                    <option value="{{ $item->id }}">{{ $item->tahun_awal }} - {{ $item->tahun_akhir }}{{ $item->is_active ? ' (Aktif)' : '' }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -85,6 +95,7 @@
                 { data: null, render: (d, t, r, m) => m.row + 1 },
                 { data: 'kode_layanan' },
                 { data: 'uraian' },
+                { data: 'periode_label', render: d => d ?? 'Semua Periode' },
                 {
                     data: 'id', orderable: false, className: 'text-end',
                     render: id => `
@@ -118,6 +129,7 @@
             $('#recordId').val(row.id);
             $('#kode_layanan').val(row.kode_layanan);
             $('#uraian').val(row.uraian);
+            $('#periode_rsb_id').val(row.periode_rsb_id ?? '');
             modal.show();
         });
 

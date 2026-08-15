@@ -111,7 +111,6 @@
         const DOCUMENT_URL = '{{ route("monitoring.realisasi-kinerja-layanan.documents.store") }}';
         const DOCUMENT_DELETE_URL = '{{ url("monitoring/realisasi-kinerja-layanan/documents") }}';
         const ACTIVE_PERIOD_ID = '{{ $periodeAktif?->id ?? '' }}';
-        const IS_ADMIN = @json($isAdmin);
         const saveTimers = {};
 
         function showMessage(message) {
@@ -150,12 +149,10 @@
             documents.forEach(document => {
                 const $item = $('<div>', { class: 'd-flex align-items-center gap-1 mb-1' });
                 $('<a>', { href: document.url, target: '_blank', class: 'small text-truncate', text: document.nama_asli }).appendTo($item);
-                if (!IS_ADMIN) {
-                    $('<button>', {
-                        type: 'button', class: 'btn btn-sm btn-link text-danger p-0 delete-document',
-                        'data-id': document.id, html: '<i class="bi bi-x-circle"></i>',
-                    }).appendTo($item);
-                }
+                $('<button>', {
+                    type: 'button', class: 'btn btn-sm btn-link text-danger p-0 delete-document',
+                    'data-id': document.id, html: '<i class="bi bi-x-circle"></i>',
+                }).appendTo($item);
                 $container.append($item);
             });
         }
@@ -229,25 +226,21 @@
                         $('<td>', { class: 'numeric-cell' }).append($('<input>', {
                              type: 'text', class: 'form-control form-control-sm realization-input',
                             'data-year': year, 'data-semester': semester, value: value.nilai ?? '',
-                            disabled: IS_ADMIN,
                         })).appendTo($row);
                         $('<td>', { class: 'keterangan-cell' }).append($('<textarea>', {
                             class: 'form-control form-control-sm semester-note', rows: 2,
                             'data-year': year, 'data-semester': semester, text: value.keterangan || '',
-                            disabled: IS_ADMIN,
                         })).appendTo($row);
                         const $documents = $('<div>', { class: 'document-list mb-2' });
                         renderDocuments($documents, documents[`${year}_${semester}`] || []);
                         const $documentCell = $('<td>', { class: 'dokumen-cell' }).append($documents);
-                        if (!IS_ADMIN) {
-                            $documentCell.append($('<input>', {
-                                type: 'file', multiple: true, class: 'form-control form-control-sm document-input',
-                                accept: '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png', 'data-year': year, 'data-semester': semester,
-                            })).append($('<button>', {
-                                type: 'button', class: 'btn btn-sm btn-outline-primary mt-1 upload-documents',
-                                'data-year': year, 'data-semester': semester, text: 'Upload',
-                            }));
-                        }
+                        $documentCell.append($('<input>', {
+                            type: 'file', multiple: true, class: 'form-control form-control-sm document-input',
+                            accept: '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png', 'data-year': year, 'data-semester': semester,
+                        })).append($('<button>', {
+                            type: 'button', class: 'btn btn-sm btn-outline-primary mt-1 upload-documents',
+                            'data-year': year, 'data-semester': semester, text: 'Upload',
+                        }));
                         $documentCell.appendTo($row);
                     });
                     $('<td>', { class: 'text-nowrap numeric-cell' }).append($('<span>', {

@@ -43,7 +43,11 @@ class RealisasiKinerjaLayananController extends Controller
             $targets = TargetKinerjaLayanan::with(['kategori.layanan', 'kategori.unitKerja', 'unitKerja'])
                 ->where('periode_rsb_id', $periode->id)
                 ->when($unitKerja, fn ($query) => $query->where('unit_kerja_id', $unitKerja->id))
+                ->whereHas('kategori.layanan', fn ($query) => $query->where(function ($q) use ($periode) {
+                    $q->whereNull('periode_rsb_id')->orWhere('periode_rsb_id', $periode->id);
+                }))
                 ->get()
+                ->filter(fn ($target) => collect($target->target_tahunan ?? [])->filter(fn ($value) => $value !== null)->isNotEmpty())
                 ->sortBy(fn ($target) => sprintf(
                     '%s|%s|%s|%s',
                     $target->unitKerja?->kode_unit ?? '',
@@ -96,21 +100,19 @@ class RealisasiKinerjaLayananController extends Controller
     public function saveDraft(Request $request): JsonResponse
     {
         try {
-            if (auth()->user()->role === 'admin') {
-                return response()->json(['success' => false, 'message' => 'Admin hanya dapat melihat data monitoring.'], 403);
-            }
             $data = $request->validate([
                 'target_id' => 'required|exists:target_kinerja_layanan,id',
                 'realisasi_tahunan' => 'required|array',
                 'keterangan' => 'nullable|string|max:5000',
             ]);
-            $unitKerja = $this->operatorUnit();
-            if (!$unitKerja) {
+            $isAdmin = auth()->user()->role === 'admin';
+            $unitKerja = $isAdmin ? null : $this->operatorUnit();
+            if (!$isAdmin && !$unitKerja) {
                 return response()->json(['success' => false, 'message' => 'Unit kerja operator belum ditentukan.'], 422);
             }
 
             $target = TargetKinerjaLayanan::where('id', $data['target_id'])
-                ->where('unit_kerja_id', $unitKerja->id)
+                ->when($unitKerja, fn ($query) => $query->where('unit_kerja_id', $unitKerja->id))
                 ->first();
             if (!$target) {
                 return response()->json(['success' => false, 'message' => 'Target tidak sesuai dengan unit kerja operator.'], 422);
@@ -160,9 +162,6 @@ class RealisasiKinerjaLayananController extends Controller
     public function uploadDocuments(Request $request): JsonResponse
     {
         try {
-            if (auth()->user()->role === 'admin') {
-                return response()->json(['success' => false, 'message' => 'Admin hanya dapat melihat data monitoring.'], 403);
-            }
             $data = $request->validate([
                 'target_id' => 'required|exists:target_kinerja_layanan,id',
                 'tahun' => 'required|integer',
@@ -175,9 +174,10 @@ class RealisasiKinerjaLayananController extends Controller
                 'dokumen.*.mimes' => 'Dokumen harus berformat PDF, Word, Excel, JPG, atau PNG.',
                 'dokumen.*.max' => 'Ukuran setiap dokumen maksimal 10 MB.',
             ]);
-            $unitKerja = $this->operatorUnit();
+            $isAdmin = auth()->user()->role === 'admin';
+            $unitKerja = $isAdmin ? null : $this->operatorUnit();
             $target = TargetKinerjaLayanan::where('id', $data['target_id'])
-                ->where('unit_kerja_id', $unitKerja?->id)
+                ->when($unitKerja, fn ($query) => $query->where('unit_kerja_id', $unitKerja->id))
                 ->first();
             if (!$target) {
                 return response()->json(['success' => false, 'message' => 'Target tidak sesuai dengan unit kerja operator.'], 422);
@@ -215,14 +215,12 @@ class RealisasiKinerjaLayananController extends Controller
     public function deleteDocument($document): JsonResponse
     {
         try {
-            if (auth()->user()->role === 'admin') {
-                return response()->json(['success' => false, 'message' => 'Admin hanya dapat melihat data monitoring.'], 403);
-            }
-            $unitKerja = $this->operatorUnit();
+            $isAdmin = auth()->user()->role === 'admin';
+            $unitKerja = $isAdmin ? null : $this->operatorUnit();
             $item = RealisasiKinerjaLayananDokumen::with('realisasi.target')
                 ->where('id', $document)
                 ->first();
-            if (!$item || $item->realisasi->target->unit_kerja_id !== $unitKerja?->id) {
+            if (!$item || (!$isAdmin && $item->realisasi->target->unit_kerja_id !== $unitKerja?->id)) {
                 return response()->json(['success' => false, 'message' => 'Dokumen tidak valid.'], 422);
             }
 

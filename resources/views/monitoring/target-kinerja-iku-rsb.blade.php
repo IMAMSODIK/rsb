@@ -68,7 +68,6 @@
         const DATA_URL = '{{ route("monitoring.target-kinerja-iku-rsb.data") }}';
         const DRAFT_URL = '{{ route("monitoring.target-kinerja-iku-rsb.draft") }}';
         const ACTIVE_PERIOD_ID = '{{ $periodeAktif?->id ?? '' }}';
-        const IS_ADMIN = @json($isAdmin);
         let years = [];
         let saveTimers = {};
 
@@ -135,13 +134,12 @@
 
                 years.forEach(year => {
                     const value = item.target_tahunan?.[year] ?? '';
-                     $('<td>').append($('<input>', {
-                          type: 'text',
-                         class: 'form-control form-control-sm target-input',
-                         'data-year': year,
-                         value: value,
-                         disabled: IS_ADMIN,
-                     })).appendTo($row);
+                      $('<td>').append($('<input>', {
+                           type: 'text',
+                          class: 'form-control form-control-sm target-input',
+                          'data-year': year,
+                           value: value,
+                      })).appendTo($row);
                 });
 
                 $('<td>').append($('<span>', {

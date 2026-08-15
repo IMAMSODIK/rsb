@@ -112,3 +112,20 @@ capain di entry semester 1 dan 2, relisasi juga
 persentasi adalah target pertahun
 
 realisasi
+
+
+
+
+untuk menu target kinerja layanan, contoh: saya login sebagai operator dari unit kerja X, untuk input target kinerja saya harus pilih periode dulu
+lalu setelah itu muncul semua data dari table kategori kinerja layanan yang sesuai dengan unit kerja operator yang sedang login
+lalu pada masing-masing data terdapat kolom target tahunan, misalnya periode (2021 - 2025 masing-masing bisa input targetnya pada kolom di table)
+berhubung data yang harus diisi ada banyak, sistem simpan pakai draft (untuk mengatasi masalah error tiba-tiba agar data tetap tersimpan)
+
+
+lalu untuk realisasi kinerja layanan masing-masing target kinerja layanan bisa diisi realisasi setiap tahunnya (dalam bentuk semester 1 dan 2) dan terdapat juga kolom persentasi pencapaian dan ada juga upload dokumen (dokumen bisa banyak) dan bisa ketik keterangan.
+persentasi pencapain dihitung dari target pertahun
+
+
+
+
+tahun, uraian dan file (master dokumen) (dokumen renstra)

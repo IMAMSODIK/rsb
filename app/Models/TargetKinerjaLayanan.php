@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class TargetKinerjaLayanan extends Model
 {
@@ -40,5 +41,10 @@ class TargetKinerjaLayanan extends Model
     public function unitKerja(): BelongsTo
     {
         return $this->belongsTo(UnitKerja::class, 'unit_kerja_id');
+    }
+
+    public function realisasi(): HasOne
+    {
+        return $this->hasOne(RealisasiKinerjaLayanan::class);
     }
 }

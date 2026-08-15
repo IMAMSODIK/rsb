@@ -17,9 +17,20 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">Data Kategori Kinerja Layanan</h5>
-                    <button type="button" class="btn btn-primary btn-sm" id="btnAdd">
-                        <i class="bi bi-plus-lg"></i> Tambah
-                    </button>
+                    <div class="d-flex align-items-center gap-2">
+                        <label for="periode_filter" class="mb-0 text-nowrap">Periode</label>
+                        <select id="periode_filter" class="form-select form-select-sm" style="min-width: 180px">
+                            <option value="">Semua Periode</option>
+                            @foreach ($periode as $item)
+                                <option value="{{ $item->id }}" @selected($periodeAktif?->id === $item->id)>
+                                    {{ $item->tahun_awal }} - {{ $item->tahun_akhir }}{{ $item->is_active ? ' (Aktif)' : '' }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <button type="button" class="btn btn-primary btn-sm" id="btnAdd">
+                            <i class="bi bi-plus-lg"></i> Tambah
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -100,7 +111,11 @@
         let table;
 
         table = $('#datatable').DataTable({
-            ajax: { url: BASE, dataSrc: 'data' },
+            ajax: {
+                url: BASE,
+                data: d => { d.periode_rsb_id = $('#periode_filter').val(); },
+                dataSrc: 'data',
+            },
             order: [[2, 'asc']],
             columns: [
                 { data: null, render: (d, t, r, m) => m.row + 1 },
@@ -137,6 +152,8 @@
         });
 
         $('#btnAdd').on('click', () => modal.show());
+
+        $('#periode_filter').on('change', () => table.ajax.reload(null, false));
 
         $('#datatable').on('click', '.btn-edit', function () {
             const row = table.row($(this).closest('tr')).data();
