@@ -188,37 +188,37 @@ class DatabaseSeeder extends Seeder
         //     );
         // }
 
-        // foreach ([
-        //     ['tahun_awal' => 2025, 'tahun_akhir' => 2029, 'is_active' => true],
-        //     ['tahun_awal' => 2020, 'tahun_akhir' => 2024, 'is_active' => false],
-        //     ['tahun_awal' => 2015, 'tahun_akhir' => 2019, 'is_active' => false],
-        //     ['tahun_awal' => 2010, 'tahun_akhir' => 2014, 'is_active' => false],
-        //     ['tahun_awal' => 2005, 'tahun_akhir' => 2009, 'is_active' => false],
-        // ] as $periodeData) {
-        //     PeriodeRsb::updateOrCreate(
-        //         [
-        //             'tahun_awal' => $periodeData['tahun_awal'],
-        //             'tahun_akhir' => $periodeData['tahun_akhir'],
-        //         ],
-        //         ['is_active' => $periodeData['is_active']]
-        //     );
-        // }
+        foreach ([
+            ['tahun_awal' => 2025, 'tahun_akhir' => 2029, 'is_active' => true],
+            ['tahun_awal' => 2020, 'tahun_akhir' => 2024, 'is_active' => false],
+            ['tahun_awal' => 2015, 'tahun_akhir' => 2019, 'is_active' => false],
+            ['tahun_awal' => 2010, 'tahun_akhir' => 2014, 'is_active' => false],
+            ['tahun_awal' => 2005, 'tahun_akhir' => 2009, 'is_active' => false],
+        ] as $periodeData) {
+            PeriodeRsb::updateOrCreate(
+                [
+                    'tahun_awal' => $periodeData['tahun_awal'],
+                    'tahun_akhir' => $periodeData['tahun_akhir'],
+                ],
+                ['is_active' => $periodeData['is_active']]
+            );
+        }
 
-        // foreach ([
-        //     ['urutan' => 1, 'judul' => 'Kampus Modern', 'gambar' => 'https://images.unsplash.com/photo-1564981797816-1043664bf78d?w=1600'],
-        //     ['urutan' => 2, 'judul' => 'Auditorium', 'gambar' => 'https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?w=1600'],
-        //     ['urutan' => 3, 'judul' => 'Mahasiswa Berprestasi', 'gambar' => 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1600'],
-        //     ['urutan' => 4, 'judul' => 'Riset dan Inovasi', 'gambar' => 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=1600'],
-        //     ['urutan' => 5, 'judul' => 'Layanan Terintegrasi', 'gambar' => 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1600'],
-        // ] as $sliderData) {
-        //     SliderItem::updateOrCreate(
-        //         ['urutan' => $sliderData['urutan']],
-        //         [
-        //             'judul' => $sliderData['judul'],
-        //             'gambar' => $sliderData['gambar'],
-        //             'is_active' => true,
-        //         ]
-        //     );
-        // }
+        foreach ([
+            ['urutan' => 1, 'judul' => 'Kampus Modern', 'gambar' => 'https://images.unsplash.com/photo-1564981797816-1043664bf78d?w=1600'],
+            ['urutan' => 2, 'judul' => 'Auditorium', 'gambar' => 'https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?w=1600'],
+            ['urutan' => 3, 'judul' => 'Mahasiswa Berprestasi', 'gambar' => 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1600'],
+            ['urutan' => 4, 'judul' => 'Riset dan Inovasi', 'gambar' => 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=1600'],
+            ['urutan' => 5, 'judul' => 'Layanan Terintegrasi', 'gambar' => 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1600'],
+        ] as $sliderData) {
+            SliderItem::updateOrCreate(
+                ['urutan' => $sliderData['urutan']],
+                [
+                    'judul' => $sliderData['judul'],
+                    'gambar' => $sliderData['gambar'],
+                    'is_active' => true,
+                ]
+            );
+        }
     }
 }

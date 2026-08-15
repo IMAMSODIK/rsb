@@ -32,6 +32,12 @@
                     <span class="menu-text">Unit Kerja</span>
                 </a>
             </li>
+            <li class="{{ $is('master.periode-rsb.*') }}">
+                <a href="{{ route('master.periode-rsb.index') }}">
+                    <i class="bi bi-calendar3"></i>
+                    <span class="menu-text">Periode RSB</span>
+                </a>
+            </li>
             <li class="{{ $is('master.jenis-layanan.*') }}">
                 <a href="{{ route('master.jenis-layanan.index') }}">
                     <i class="bi bi-list-ul"></i>
@@ -66,12 +72,6 @@
                 <a href="{{ route('master.iku-layanan.index') }}">
                     <i class="bi bi-graph-up"></i>
                     <span class="menu-text">IKU Kinerja Layanan</span>
-                </a>
-            </li>
-            <li class="{{ $is('master.periode-rsb.*') }}">
-                <a href="{{ route('master.periode-rsb.index') }}">
-                    <i class="bi bi-calendar3"></i>
-                    <span class="menu-text">Periode RSB</span>
                 </a>
             </li>
         </ul>
