@@ -78,6 +78,18 @@
         @endif
 
         <div class="shop-profile mt-3">
+            <p class="mb-1 fw-bold text-primary">Dokumen</p>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="{{ $is('master.dokumen-renstra.*') }}">
+                <a href="{{ route('master.dokumen-renstra.index') }}">
+                    <i class="bi bi-file-earmark-text"></i>
+                    <span class="menu-text">Dokumen Renstra</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="shop-profile mt-3">
             <p class="mb-1 fw-bold text-primary">Monitoring</p>
         </div>
         <ul class="sidebar-menu">

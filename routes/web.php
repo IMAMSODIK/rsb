@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DokumenRenstraController;
 use App\Http\Controllers\IkuLayananController;
 use App\Http\Controllers\JenisLayananController;
 use App\Http\Controllers\KategoriLayananController;
@@ -42,6 +43,15 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('sasaran-strategis', SasaranStrategisController::class)->except(['create', 'edit', 'show']);
         Route::resource('periode-rsb', PeriodeRsbController::class)->except(['create', 'edit', 'show']);
         Route::resource('settings', SliderItemController::class)->except(['create', 'edit', 'show']);
+    });
+
+    // Master Dokumen Renstra (admin: kelola, operator: hanya lihat)
+    Route::prefix('master')->name('master.')->group(function () {
+        Route::resource('dokumen-renstra', DokumenRenstraController::class)
+            ->only(['index']);
+        Route::resource('dokumen-renstra', DokumenRenstraController::class)
+            ->only(['store', 'update', 'destroy'])
+            ->middleware('admin');
     });
 
     // Monitoring
