@@ -137,8 +137,11 @@ class RbaModuleTest extends TestCase
 
         $data = $this->getJson(route('rba.transaksi.realisasi.data', ['tahun_anggaran_id' => $tahun->id]))
             ->assertOk()->assertJson(['success' => true])->json('data');
-        $this->assertSame(500.0, (float) $data[0]['total']);
-        $this->assertSame(50.0, (float) $data[0]['persentase']);
+        $perTahun = $data[0]['per_tahun'] ?? [];
+        $cell = $perTahun[$tahun->tahun] ?? $perTahun[(string) $tahun->tahun] ?? null;
+        $this->assertNotNull($cell, 'Cell per_tahun untuk tahun acuan tidak ditemukan.');
+        $this->assertSame(500.0, (float) $cell['total']);
+        $this->assertSame(50.0, (float) $cell['persentase']);
     }
 
     public function test_report_aggregates_with_simple_sum(): void

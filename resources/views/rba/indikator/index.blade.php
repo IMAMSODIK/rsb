@@ -93,7 +93,7 @@
             order: [[2, 'asc']],
             columns: [
                 { data: null, render: (d, t, r, m) => m.row + 1 },
-                { data: 'kategori.kode_kategori', defaultContent: '-' },
+                { data: 'kategori.uraian', defaultContent: '-' },
                 { data: 'kode_indikator' },
                 { data: 'uraian' },
                 {
