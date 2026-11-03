@@ -137,6 +137,64 @@
             </li>
         </ul>
 
+        @if(config('rba.enabled', true))
+        <div class="shop-profile mt-3">
+            <p class="mb-1 fw-bold text-primary">RBA</p>
+        </div>
+        <ul class="sidebar-menu">
+            @if(auth()->user()->role === 'admin')
+            <li class="{{ $is('rba.master.jenis*') }}">
+                <a href="{{ route('rba.master.jenis.index') }}">
+                    <i class="bi bi-list-ul"></i>
+                    <span class="menu-text">Jenis RBA</span>
+                </a>
+            </li>
+            <li class="{{ $is('rba.master.kategori*') }}">
+                <a href="{{ route('rba.master.kategori.index') }}">
+                    <i class="bi bi-diagram-3"></i>
+                    <span class="menu-text">Kategori RBA</span>
+                </a>
+            </li>
+            <li class="{{ $is('rba.master.indikator*') }}">
+                <a href="{{ route('rba.master.indikator.index') }}">
+                    <i class="bi bi-graph-up"></i>
+                    <span class="menu-text">Indikator RBA</span>
+                </a>
+            </li>
+            <li class="{{ $is('rba.master.detail*') }}">
+                <a href="{{ route('rba.master.detail.index') }}">
+                    <i class="bi bi-list-check"></i>
+                    <span class="menu-text">Detail RBA</span>
+                </a>
+            </li>
+            <li class="{{ $is('rba.master.tahun*') }}">
+                <a href="{{ route('rba.master.tahun.index') }}">
+                    <i class="bi bi-calendar3"></i>
+                    <span class="menu-text">Tahun Anggaran</span>
+                </a>
+            </li>
+            @endif
+            <li class="{{ $is('rba.transaksi.target*') }}">
+                <a href="{{ route('rba.transaksi.target') }}">
+                    <i class="bi bi-bullseye"></i>
+                    <span class="menu-text">Target RBA</span>
+                </a>
+            </li>
+            <li class="{{ $is('rba.transaksi.realisasi*') }}">
+                <a href="{{ route('rba.transaksi.realisasi') }}">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <span class="menu-text">Realisasi RBA</span>
+                </a>
+            </li>
+            <li class="{{ $is('rba.laporan.*') }}">
+                <a href="{{ route('rba.laporan.index') }}">
+                    <i class="bi bi-file-earmark-bar-graph"></i>
+                    <span class="menu-text">Laporan RBA</span>
+                </a>
+            </li>
+        </ul>
+        @endif
+
         @if(auth()->user()->role === 'admin')
         <ul class="sidebar-menu">
             <hr>

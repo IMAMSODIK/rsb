@@ -43,9 +43,29 @@ loginForm.addEventListener('submit', (e) => {
         body: formData,
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
         }
     })
     .then(response => {
+        if (response.status === 419) {
+            // Token CSRF basi (misal tab ganda / double-submit): ambil token
+            // baru lalu ulangi sekali, tanpa menampilkan error ke user.
+            return fetch(window.location.href, { headers: { 'Accept': 'text/html' } })
+                .then(r => r.text())
+                .then(html => {
+                    const m = html.match(/name="_token" value="([^"]+)"/);
+                    if (!m) throw new Error('csrf-refresh-failed');
+                    formData.set('_token', m[1]);
+                    return fetch(window.location.href, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                        }
+                    }).then(r => r.json().then(data => ({ status: r.status, data })));
+                });
+        }
         return response.json().then(data => ({ status: response.status, data }));
     })
     .then(({ status, data }) => {

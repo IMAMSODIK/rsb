@@ -75,10 +75,14 @@ class AuthController extends Controller
 
             $request->session()->regenerate();
 
+            // Kembali ke halaman yang diminta sebelum diarahkan ke login,
+            // bukan selalu ke dashboard. Jika tidak ada, fallback ke dashboard.
+            $intended = $request->session()->pull('url.intended', route('dashboard'));
+
             return response()->json([
                 'success' => true,
                 'message' => 'Login berhasil.',
-                'redirect' => route('dashboard'),
+                'redirect' => $intended,
             ]);
         } catch (ValidationException $e) {
             return response()->json([
