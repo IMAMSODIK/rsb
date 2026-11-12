@@ -93,7 +93,7 @@
             order: [[2, 'asc']],
             columns: [
                 { data: null, render: (d, t, r, m) => m.row + 1 },
-                { data: 'jenis.uraian', defaultContent: '-' },
+                { data: 'jenis.uraian', defaultContent: '-', createdCell: (td, d) => window.rbaUraianCell(td, d) },
                 { data: 'kode_kategori' },
                 { data: 'uraian' },
                 {

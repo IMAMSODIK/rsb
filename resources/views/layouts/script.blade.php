@@ -60,6 +60,30 @@
     window.csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
 
     /**
+     * Warna latar deterministik per teks uraian hirarki RBA.
+     * Teks yang sama selalu menghasilkan warna yang sama,
+     * teks berbeda (kemungkinan besar) menghasilkan warna berbeda.
+     */
+    window.rbaUraianBg = function (text) {
+        var s = String(text ?? '');
+        var h = 0;
+        for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+        return 'hsl(' + (h % 360) + ', 70%, 88%)';
+    };
+
+    /**
+     * Warnai background sel kolom hirarki RBA per teks uraian.
+     * Uraian yang sama => warna sama; uraian berbeda => warna berbeda.
+     * Dipakai sebagai `createdCell` DataTables agar sort/filter
+     * tetap memakai teks aslinya.
+     */
+    window.rbaUraianCell = function (td, data) {
+        if (data === null || data === undefined || data === '') return;
+        td.style.backgroundColor = window.rbaUraianBg(data);
+        td.style.color = '#212529';
+    };
+
+    /**
      * Helper AJAX generik untuk submit form CRUD.
      * @param {HTMLFormElement} form - elemen form
      * @param {string} url - endpoint tujuan

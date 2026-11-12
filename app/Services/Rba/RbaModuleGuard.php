@@ -20,6 +20,9 @@ class RbaModuleGuard
         'rba_tahun_anggaran',
         'rba_target',
         'rba_realisasi',
+        'rba_analisis_input',
+        'rba_analisis_target',
+        'rba_analisis_variable_target',
         'rba_history',
     ];
 

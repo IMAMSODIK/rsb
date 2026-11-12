@@ -28,6 +28,8 @@
                             <thead>
                                 <tr>
                                     <th width="60">No</th>
+                                    <th>Jenis RBA</th>
+                                    <th>Kategori RBA</th>
                                     <th>Indikator RBA</th>
                                     <th>Kode Detail</th>
                                     <th>Uraian</th>
@@ -91,10 +93,12 @@
 
         table = $('#datatable').DataTable({
             ajax: { url: BASE, dataSrc: 'data' },
-            order: [[2, 'asc']],
+            order: [[4, 'asc']],
             columns: [
                 { data: null, render: (d, t, r, m) => m.row + 1 },
-                { data: 'indikator.uraian', defaultContent: '-' },
+                { data: 'indikator.kategori.jenis.uraian', defaultContent: '-', createdCell: (td, d) => window.rbaUraianCell(td, d) },
+                { data: 'indikator.kategori.uraian', defaultContent: '-', createdCell: (td, d) => window.rbaUraianCell(td, d) },
+                { data: 'indikator.uraian', defaultContent: '-', createdCell: (td, d) => window.rbaUraianCell(td, d) },
                 { data: 'kode_detail' },
                 { data: 'uraian' },
                 {

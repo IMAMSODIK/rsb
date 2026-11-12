@@ -186,6 +186,12 @@
                     <span class="menu-text">Realisasi RBA</span>
                 </a>
             </li>
+            <li class="{{ $is('rba.analisis*') }}">
+                <a href="{{ route('rba.analisis.index') }}">
+                    <i class="bi bi-clipboard-data"></i>
+                    <span class="menu-text">Analisis RBA</span>
+                </a>
+            </li>
             <li class="{{ $is('rba.laporan.*') }}">
                 <a href="{{ route('rba.laporan.index') }}">
                     <i class="bi bi-file-earmark-bar-graph"></i>

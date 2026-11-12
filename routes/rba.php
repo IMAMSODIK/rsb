@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Rba\RbaAnalisisController;
 use App\Http\Controllers\Rba\RbaDetailController;
 use App\Http\Controllers\Rba\RbaIndikatorController;
 use App\Http\Controllers\Rba\RbaJenisController;
@@ -29,6 +30,12 @@ Route::middleware(['web', 'auth', EnsureRbaEnabled::class])->prefix('rba')->name
         Route::get('realisasi/data', [RbaRealisasiController::class, 'data'])->name('realisasi.data');
         Route::get('realisasi/detail-options', [RbaRealisasiController::class, 'detailOptions'])->name('realisasi.detail-options');
         Route::post('realisasi/save', [RbaRealisasiController::class, 'save'])->name('realisasi.save');
+    });
+
+    Route::prefix('analisis')->name('analisis.')->group(function () {
+        Route::get('/', [RbaAnalisisController::class, 'index'])->name('index');
+        Route::get('data', [RbaAnalisisController::class, 'data'])->name('data');
+        Route::post('save', [RbaAnalisisController::class, 'save'])->name('save');
     });
 
     Route::prefix('laporan')->name('laporan.')->group(function () {

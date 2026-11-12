@@ -29,6 +29,8 @@
                             <option value="rba_tahun_anggaran">rba_tahun_anggaran</option>
                             <option value="rba_target">rba_target</option>
                             <option value="rba_realisasi">rba_realisasi</option>
+                            <option value="rba_analisis_input">rba_analisis_input</option>
+                            <option value="rba_analisis_target">rba_analisis_target</option>
                         </select>
                         <label for="filter_aksi" class="visually-hidden">Filter aksi</label>
                         <select id="filter_aksi" class="form-select form-select-sm" title="Filter berdasarkan aksi">
